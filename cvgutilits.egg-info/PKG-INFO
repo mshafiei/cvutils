@@ -1,0 +1,17 @@
+Metadata-Version: 2.1
+Name: cvgutilits
+Version: 0.0.1
+Summary: Computer vision/graphics tools
+Home-page: https://github.com/mshafiei/cvgutils.git
+Author: Mohammad Shafiei
+Author-email: shafieirn@gmail.com
+License: UNKNOWN
+Description: # cvutils
+        Computer Vision utilities that I frequently use
+        
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
