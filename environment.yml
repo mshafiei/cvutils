@@ -2,4 +2,4 @@ name: python36
 channels:
 dependencies:
    - pip:
-     - "--editable=git+https://github.com/mshafiei/cvutils/tree/master"
+     - "--editable=git+https://github.com/mshafiei/cvgutils/tree/master"
