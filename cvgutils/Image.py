@@ -24,3 +24,24 @@ def hdr2srgb(im):
     """
 
     return (np.clip(im,0,1) ** (1/2.2) * 255).astype(np.uint8)
+
+def resize(im,scale=None,dx=None,dy=None):
+    """[Rescales an image]
+
+    Args:
+        im ([h,w,3 ndarray]): [input image]
+        scale ([float], optional): [scale factor]. Defaults to None.
+        dx ([int], optional): [new width]. Defaults to None.
+        dy ([int], optional): [new height]. Defaults to None.
+
+    Returns:
+        [dy,dx,3 ndarray]: [rescaled image]
+    """
+
+    if(not(scale is None)):
+        dsize = (int(im.shape[1]*scale),int(im.shape[0]*scale))
+    elif((not(dx is None)) and (not(dy is None))):
+         dsize = (dx,dy)    
+    else:
+        Exception("At least one of the scale parameters should be set")
+    return cv2.resize(im,dsize=dsize,interpolation = cv2.INTER_AREA)
