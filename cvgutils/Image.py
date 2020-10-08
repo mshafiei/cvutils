@@ -1,7 +1,7 @@
 import cv2
-import numpy
+import numpy as np
 
-def writePng(im, fn):
+def writePng(fn, im):
     """[Tonemap a linear image with quasi srgb (clip and gamma 1/2.2) and write in filename with png extension]
 
     Args:
@@ -11,7 +11,7 @@ def writePng(im, fn):
     Returns:
         [hxwx3 ndarray]: [srgb image]
     """
-    cv2.imwrite(fn, hdr2ldr(im))
+    cv2.imwrite(fn, hdr2srgb(im))
 
 def hdr2srgb(im):
     """[Tonemap a linear image with quasi srgb (clip and gamma 1/2.2)]
@@ -23,7 +23,7 @@ def hdr2srgb(im):
         [hxwx3 ndarray]: [srgb image]
     """
 
-    return (np.clip(im,0,1) ** (1/2.2) * 255).astype(np.uint8)
+    return (np.clip(im[:,:,::-1],0,1) ** (1/2.2) * 255).astype(np.uint8)
 
 def resize(im,scale=None,dx=None,dy=None):
     """[Rescales an image]

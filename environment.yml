@@ -1,5 +1,12 @@
 name: python36
 channels:
 dependencies:
+   - python=3.6
+   - pytorch
+   - torchvision
+   - opencv
+   - tqdm
+   - scipy
    - pip:
-     - "--editable=git+https://github.com/mshafiei/cvgutils/tree/master"
+     - wandb
+       #- "--editable=git+https://github.com/mshafiei/cvgutils/tree/master"
