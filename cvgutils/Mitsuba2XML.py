@@ -10,39 +10,33 @@ import numpy as np
 import torch
 
 # bsdfs
-def plastic(diffuse, specular, nonlinear, intior,extior):
-    """[Plastic material dict]
+def plastic(diffuse, specular, intior,extior):
+    xmlstr = """<bsdf type="roughplastic">
+        <string name="distribution" value="beckmann"/>
+        <float name="int_ior" value="%f"/>
+        <float name="ext_ior" value="%f"/>
+        <rgb name="diffuse_reflectance" value="%f,%f,%f"/>
+        <rgb name="specular_reflectance" value="%f,%f,%f"/>
+    </bsdf>""" % (intior,extior,diffuse[0],diffuse[1],diffuse[2],specular[0],specular[1],specular[2])
+    return xmlstr
 
-    Args:
-        diffuse ([list]): [rgb values]
-        specular ([list]): [rgb values]
-        nonlinear ([bool]): [description]
-        intior ([float]): [description]
-        extior ([list]): [description]
-        
-    Returns:
-        [dict]: [material dict]
-    """
-    return {
-            "type" : "roughplastic",
-            "diffuse_reflectance" : {
-                "type" : "rgb",
-                "value" : diffuse,
-            },
-            'nonlinear':False,
-            'int_ior':intior,
-            'ext_ior':extior,
-            'specular_reflectance':{
-                "type" : "rgb",
-                "value" : specular,
-            }
-    }
+def conductor(specular, eta, k, alpha):
+    xmlstr = """<bsdf type="roughconductor">
+        <string name="distribution" value="beckmann"/>
+        <float name="eta" value="%f"/>
+        <float name="k" value="%f"/>
+        <float name="alpha" value="%f"/>
+        <rgb name="specular_reflectance" value="%f,%f,%f"/>
+    </bsdf>""" % (eta,k,alpha,specular[0],specular[1],specular[2])
+    return xmlstr
+
+
 
 def diffuse(diffuse):
     if(type(diffuse) == list):
-        exp = """<bsdf type="diffuse">
+        exp = """
             <rgb name="reflectance" value="%f, %f, %f"/>
-        </bsdf>"""%(diffuse[0],diffuse[1],diffuse[2])
+        """%(diffuse[0],diffuse[1],diffuse[2])
     elif(type(diffuse) == str):
         exp = """<texture type="bitmap" name="reflectance">
                     <string name="filename" value="%s"/>
@@ -56,6 +50,8 @@ def diffuse(diffuse):
 
 #shapes
 def sphere(center, radius,material):
+    if(type(center) == torch.Tensor):
+        center = center[0]
     transform = """<transform version="2.0.0" name="to_world">
             <scale value="%f"/>
             <translate x="%f" y="%f" z="%f"/>
@@ -66,6 +62,19 @@ def sphere(center, radius,material):
     </shape>""" % (transform, material)
     return xmlstr
 
+def obj(center, scale,material,fn):
+
+    transform = """<transform version="2.0.0" name="to_world">
+            <scale value="%f"/>
+            <translate x="%f" y="%f" z="%f"/>
+        </transform>"""%(scale,center[0],center[1],center[2])
+    xmlstr =  """<shape version="2.0.0" type="obj">
+        %s
+        %s
+        <string name="filename" value="%s" />
+    </shape>""" % (transform, material,fn)
+    return xmlstr
+
 #lights
 def envmap(fn):
     xmlstr =  """ <emitter version="2.0.0" type="envmap">
@@ -73,8 +82,23 @@ def envmap(fn):
     </emitter>"""%fn
     return xmlstr
 
+def pointlight(p,intensity):
+    if(type(p)==torch.Tensor):
+        p = p[0]
+    xmlstr =  """ <emitter version="2.0.0" type="point">
+        <point name="position" value="%f,%f,%f"/>
+        <rgb name="intensity" value="%f,%f,%f"/>
+
+    </emitter>"""%(p[0],p[1],p[2],intensity[0],intensity[1],intensity[2])
+    return xmlstr
+
 #camera
-def camera(origin,lookat,up,fov,w=256,h=256,nsamples=4):
+def camera(origin,lookat,up,fov,near=0.01,far=1000.0,w=256,h=256,nsamples=4):
+    if(type(origin)==torch.Tensor):
+        origin = origin[0]
+        lookat = lookat[0]
+        up = up[0]
+        
     transform = ScalarTransform4f.look_at(origin=origin,
                                                 target=lookat,
                                                 up=up)

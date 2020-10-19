@@ -1,0 +1,3 @@
+[submodule "cluster_control"]
+	path = cluster_control
+	url = https://github.com/mshafiei/cluster_control
