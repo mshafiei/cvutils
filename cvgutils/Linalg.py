@@ -150,9 +150,10 @@ def perspective_projection(fov,near,far,filmSize=np.array([1,1]),cropSize=np.arr
 
     translate = torch.eye(4)
     translate[:3,-1] = torch.Tensor([-1.0, -1.0 / aspect, 0.0])
-    scale = torch.eye(torch.Tensor([-0.5,-0.5*aspect,1.0,1.0]))
-    translateCrop = torch.eye(torch.Tensor([-rel_offset[0],-rel_offset[1],0.0,1.0]))
-    scaleCrop = torch.eye(torch.Tensor([1/rel_size[0],1/rel_size[1],1.0,1.0]))
+    scale = torch.diagflat(torch.Tensor([-0.5,-0.5*aspect,1.0,1.0]))
+    translateCrop = torch.eye(4)
+    translateCrop[:3,-1] = torch.Tensor([-rel_offset[0],-rel_offset[1],0.0])
+    scaleCrop = torch.diagflat(torch.Tensor([1/rel_size[0],1/rel_size[1],1.0,1.0]))
     m1 = torch.mm(scaleCrop,torch.mm(translateCrop,torch.mm(scale,torch.mm(translate,p))))
     return m1
 
