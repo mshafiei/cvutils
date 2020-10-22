@@ -93,13 +93,15 @@ def pointlight(p,intensity):
     return xmlstr
 
 #camera
-def camera(origin,lookat,up,fov,near=0.01,far=1000.0,w=256,h=256,nsamples=4):
-    if(type(origin)==torch.Tensor):
+def camera(origin,lookat,up,fov,ext=None,near=0.01,far=1000.0,w=256,h=256,nsamples=4):
+    if(not(ext is None)):
+        transform = ScalarTransform4f(ext.cpu().numpy()[0])
+    elif(type(origin)==torch.Tensor):
         origin = origin[0]
         lookat = lookat[0]
         up = up[0]
         
-    transform = ScalarTransform4f.look_at(origin=origin,
+        transform = ScalarTransform4f.look_at(origin=origin,
                                                 target=lookat,
                                                 up=up)
     film = """<film type="hdrfilm">
@@ -123,11 +125,8 @@ def camera(origin,lookat,up,fov,near=0.01,far=1000.0,w=256,h=256,nsamples=4):
         <float name="fov" value="%f"/>
         %s
         %s
-    </sensor>""" %(transform,0.1,1000.0,fov,film,sampler)
+    </sensor>""" %(transform,near,far,fov,film,sampler)
     return xmlstr
-
-    
-
 
 def generateScene(shape,light,camera):
     xmlstr = """<scene version="2.0.0">
@@ -152,3 +151,19 @@ def renderScene(scene):
     bmp_linear_rgb = bmp.convert(Bitmap.PixelFormat.RGB, Struct.Type.Float32, srgb_gamma=False)
     image_np = np.array(bmp_linear_rgb)
     return image_np
+
+def renderRays(sensor,uv):
+    h,w = np.array(sensor.film().size())
+    ray = np.zeros((h,w,3))
+
+    # for i in np.arange(h):
+    #     for j in np.arange(w):
+    for idx, (uv0) in enumerate(uv.transpose(1,0)):
+        i = idx // h
+        j = idx % h
+        r, _ = sensor.sample_ray(0, 0, [uv0[0],uv0[1]], 0)
+        ray[j,i,:] = np.array(r.d)
+            
+    return ray
+
+

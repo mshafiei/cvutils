@@ -76,7 +76,7 @@ def vectorNormalize(v):
     Returns:
         [Tensor b,1,...]: [Normalized vector]
     """
-    return v / ((v**2).sum(dim=1) ** 0.5)
+    return v / ((v**2).sum(dim=1) ** 0.5 + 1e-20)
 
 def lookAt(Origin, LookAt, Up):
 
@@ -106,8 +106,58 @@ def lookAt(Origin, LookAt, Up):
     return m
 
 
-def perspective(h,w,far,near,fov):
-    """[Perspective camera Projection matrix]
+
+def perspective(fov,near,far):
+    """[Generate 4x4 perspective transform matrix. Re-implementation of Mitsuba]
+
+    Args:
+        near ([float]): [near plane]
+        far ([float]): [far plane]
+        fov ([float]): [Field of view in degrees]
+
+    Returns:
+        [ndarray]: [4x4 projection matrix]
+    """
+    #mitsuba
+    recip = 1.0 / (far - near)
+    cot = 1.0 / np.tan(np.deg2rad(fov * 0.5))
+
+    perspective = torch.diagflat(torch.Tensor([cot,cot,far*recip,0.0]))
+    perspective[2,3] = -near * far * recip
+    perspective[3,2] = 1.0
+
+    return perspective
+
+def perspective_projection(fov,near,far,filmSize=np.array([1,1]),cropSize=np.array([1,1]),cropOffset=np.array([0,0])):
+    """[Reimplementation of Mitsuba perspective_projection function]
+
+    Args:
+        fov ([float]): [Field of view in degrees]
+        near ([float]): [Near plane]
+        far ([float]): [Far plane]
+        filmSize ([1x2 ndarray], optional): [Film size]. Defaults to np.array([1,1]).
+        cropSize ([1x2 ndarray], optional): [crop size]. Defaults to np.array([1,1]).
+        cropOffset ([1x2 ndarray], optional): [Crop offset]. Defaults to np.array([0,0]).
+
+    Returns:
+        [4x4 tensor]: [Perspective camera projection matrix]
+    """
+
+    aspect = filmSize[0] / filmSize[1]
+    rel_offset = cropOffset / filmSize
+    rel_size = cropSize / filmSize
+    p = perspective(fov,near,far)
+
+    translate = torch.eye(4)
+    translate[:3,-1] = torch.Tensor([-1.0, -1.0 / aspect, 0.0])
+    scale = torch.eye(torch.Tensor([-0.5,-0.5*aspect,1.0,1.0]))
+    translateCrop = torch.eye(torch.Tensor([-rel_offset[0],-rel_offset[1],0.0,1.0]))
+    scaleCrop = torch.eye(torch.Tensor([1/rel_size[0],1/rel_size[1],1.0,1.0]))
+    m1 = torch.mm(scaleCrop,torch.mm(translateCrop,torch.mm(scale,torch.mm(translate,p))))
+    return m1
+
+def sampleRay(h,w,far,near,fov,samples,worldtranform):
+    """[Reimplementation of Mitsuba sample_ray]
 
     Args:
         far ([float]): [float]
@@ -118,27 +168,14 @@ def perspective(h,w,far,near,fov):
         [4x4 array]: [float]
     """
     
-    #mitsuba
-    offset = [-0.5,-0.5,0.0]
-
-    recip = 1.0 / (far - near)
-    tan = np.tan(fov * 0.5)
-    cot = 1.0 / tan
-
-    t = torch.eye(4)
-    t[0,0] = cot
-    t[1,1] = cot
-    t[2,2] = far * recip
-    t[3,3] = 0.0
-    t[2,3] = -near * far * recip
-    t[3,2] = 1.0
+    aspect = w/h
     
-
-    tinv = torch.eye(4)
-    tinv[0,0] = tan
-    tinv[1,1] = tan
-    tinv[2,2] = 0.0
-    tinv[3,3] = 1/near
-    tinv[2,3] = 1.0
-    tinv[3,2] = (near - far) / (far - near)
-    return t, tinv
+    camera_to_sample = perspective_projection(fov,near,far,filmSize=np.array([w,h]),cropSize=np.array([w,h]))
+    sample_to_camera = torch.inverse(camera_to_sample[None,...])
+    samples = np.concatenate((samples,np.zeros_like(samples[:,0:1,...]),np.ones_like(samples[:,0:1,...])),axis=1)
+    
+    d = torch.einsum('abc,acd->abd',sample_to_camera,torch.Tensor(samples))
+    d = d[:,:3,...] / d[:,3,...]
+    d = vectorNormalize(d)
+    d = torch.einsum('abc,acd->abd',worldtranform[:,:3,:3,...].transpose(2,1),d[:,:3,...])
+    return d
