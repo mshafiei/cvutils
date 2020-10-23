@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import torch
+import OpenEXR as exr
 def writePng(fn, im):
     """[Tonemap a linear image with quasi srgb (clip and gamma 1/2.2) and write in filename with png extension]
 
@@ -66,4 +67,65 @@ def imageseq2avi(fn,ims,fps=30,Tonemap=True):
         out.write(tmp)
 
     out.release()
+
+def readChannelExr(fn):
+    """[Returns a dictionary mapping channel id to corresponding hxw image. Mostly copied from https://gist.github.com/jadarve/de3815874d062f72eaf230a7df41771b]
+
+    Args:
+        fn (str): [Exr filename]
+
+    Returns:
+        [dict]: [dictionary mapping channel id to height x width image]
+    """
+
+    import Imath
+    exrfile = exr.InputFile(fn)
+    header = exrfile.header()
+    dw = header['dataWindow']
+    isize = (dw.max.y - dw.min.y + 1, dw.max.x - dw.min.x + 1)
+    channelData = dict()
+    
+    # convert all channels in the image to numpy arrays
+    for c in header['channels']:
+        C = exrfile.channel(c, Imath.PixelType(Imath.PixelType.FLOAT))
+        C = np.fromstring(C, dtype=np.float32)
+        C = np.reshape(C, isize)
+        
+        channelData[c] = C
+    
+    return channelData
+    
+
+def readExrImage(fn,channels=[['R','G','B','A']]):
+    channelData = readChannelExr(fn)
+    
+    imgs = []
+    for cset in channels:
+        #make sure all required channels are in the file
+        assert(np.array([cset[i] in channelData.keys() for i in range(len(cset))]).all())
+        img = []
+        for c in cset:
+            img.append(channelData[c])
+        imgs.append(np.stack(img,axis=-1).transpose(1,0,2))
+    return imgs
+
+def depth2txt(fn,d,im):
+    """[Takes a hxwx3 depth image and saves it in a text file]
+
+    Args:
+        fn (str): [filename]
+        d ([ndarray]): [depth image]
+        im ([ndarray]): [reflectanec image]
+    """
+    if(not(im is None)):
+        assert(im.shape == d.shape)
+        out = np.concatenate((d.reshape(-1,3),im.reshape(-1,3)),axis=1)
+    else:
+        out = d.reshape(-1,3)
+    np.savetxt(fn,out,fmt='%-10.5f')
+
+
+
+
+
 

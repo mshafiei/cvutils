@@ -78,6 +78,8 @@ def vectorNormalize(v):
     """
     return v / ((v**2).sum(dim=1) ** 0.5 + 1e-20)
 
+def relerr(a,b):
+    return (((a-b) ** 2 / b **2) ** 0.5).sum()
 def lookAt(Origin, LookAt, Up):
 
     """[Creates camera matrix in right hand coordinate. Implementation of https://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/lookat-function]
@@ -157,7 +159,7 @@ def perspective_projection(fov,near,far,filmSize=np.array([1,1]),cropSize=np.arr
     m1 = torch.mm(scaleCrop,torch.mm(translateCrop,torch.mm(scale,torch.mm(translate,p))))
     return m1
 
-def sampleRay(h,w,far,near,fov,samples,worldtranform):
+def sampleRay(h,w,far,near,fov,samples,ext):
     """[Reimplementation of Mitsuba sample_ray]
 
     Args:
@@ -178,5 +180,6 @@ def sampleRay(h,w,far,near,fov,samples,worldtranform):
     d = torch.einsum('abc,acd->abd',sample_to_camera,torch.Tensor(samples))
     d = d[:,:3,...] / d[:,3,...]
     d = vectorNormalize(d)
-    d = torch.einsum('abc,acd->abd',worldtranform[:,:3,:3,...].transpose(2,1),d[:,:3,...])
+    d = torch.einsum('abc,ac...->ab...',ext[:,:3,:3,...].transpose(2,1),d[:,:3,...])
+    
     return d

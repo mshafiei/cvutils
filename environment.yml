@@ -1,10 +1,13 @@
 name: python37
 channels:
+        - conda-forge
 dependencies:
    - python=3.7
    - pytorch=1.5.0
    - torchvision
+   - openexr   
    - opencv
+   - openexr-python
    - tqdm
    - scipy
    - pip:
