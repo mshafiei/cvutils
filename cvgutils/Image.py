@@ -12,7 +12,10 @@ def writePng(fn, im):
     Returns:
         [hxwx3 ndarray]: [srgb image]
     """
-    cv2.imwrite(fn, hdr2srgb(im))
+    if(type(im[0,0,0]) == np.uint8):
+        cv2.imwrite(fn, im[:,:,::-1])
+    else:
+        cv2.imwrite(fn, hdr2srgb(im)[:,:,::-1])
 
 def hdr2srgb(im):
     """[Tonemap a linear image with quasi srgb (clip and gamma 1/2.2) \in [0-1]]
@@ -25,8 +28,8 @@ def hdr2srgb(im):
     """
     if(type(im) == torch.Tensor):
         im = im.cpu().numpy()
-
-    return (np.clip(im[:,:,::-1],0,1) ** (1/2.2) * 255).astype(np.uint8)
+    
+    return (np.clip(im,0,1) ** (1/2.2) * 255).astype(np.uint8)
 
 def resize(im,scale=None,dx=None,dy=None):
     """[Rescales an image]

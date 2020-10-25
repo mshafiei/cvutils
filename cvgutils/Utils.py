@@ -1,6 +1,8 @@
 import h5py
 import numpy as np
+import cv2
 def images2hdf5(fn,imgs,masks):
+
     f = h5py.File(fn, "w")
     f.create_dataset("in", imgs.shape, dtype = np.uint8,chunks=(1,1,*imgs.shape[2:]),compression="lzf", shuffle=True)
     f.create_dataset("in_masks", masks.shape, dtype = np.uint8,chunks=(1,1,*masks.shape[2:]),compression="lzf", shuffle=True)

@@ -40,6 +40,9 @@ def diffuse(diffuse):
     elif(type(diffuse) == str):
         exp = """<texture type="bitmap" name="reflectance">
                     <string name="filename" value="%s"/>
+                    <transform name="to_uv">
+                    <scale x="1" y="1"/>
+                </transform>
         </texture>""" % diffuse
     else:
         raise Exception("wrong material argument")
