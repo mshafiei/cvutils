@@ -26,6 +26,47 @@ def pt2xyz(p, t, r = 1):
 
     return x,y,z
 
+def xyz2pt(x, y, z):
+    """[cartesian to polar transform]
+
+    Args:
+        x ([ndarray or tensor]): [description]
+        y ([ndarray or tensor]): [description]
+        z ([ndarray or tensor]): [description]
+
+    Returns:
+        [tuple]: [phi \in [0,2\pi] and theta \in [0, \pi]]
+    """
+    assert(type(x) == type(y),'type mismatch')
+    assert(type(y) == type(z),'type mismatch')
+
+    if(type(x) == torch.Tensor):
+        acos = torch.acos
+        atan2 = np.atan2
+        atan = np.atan
+    else:
+        acos = np.arccos
+        atan2 = np.arctan2
+        atan = np.arctan
+
+    r = (x**2+y**2+z**2) ** 0.5
+    p = atan2(y,x)
+    p[p<0] = p[p<0] + 2*np.pi
+    t = acos(z/(r+1e-20))
+
+    return p, t
+
+def pt2uv(p,t):
+    """[polar to uniform]
+
+    Args:
+        p ([ndarray or tensor]): [description]
+        t ([ndarray or tensor]): [description]
+    Returns:
+        [tuple]: [u \in [0,1] and v \in [0,1]]
+    """
+    return p/(np.pi * 2),t/np.pi
+
 def uv2pt(u,v):
     """[Converts polar to cartesian]
 

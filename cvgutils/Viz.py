@@ -16,7 +16,7 @@ def get_img_from_fig(fig, dpi=180):
     return img
 
 def scatter(x,y):
-    fig = plt.figure()
+    plt.figure()
     plt.scatter(x,y)
     return plt
 

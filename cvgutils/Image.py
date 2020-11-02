@@ -94,7 +94,7 @@ def readChannelExr(fn):
         C = np.fromstring(C, dtype=np.float32)
         C = np.reshape(C, isize)
         
-        channelData[c] = C
+        channelData[c] = C.transpose(1,0)
     
     return channelData
     
