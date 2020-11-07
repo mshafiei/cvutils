@@ -10,14 +10,26 @@ import numpy as np
 import torch
 
 # bsdfs
-def plastic(diffuse, specular, intior,extior):
+def plastic(diffuse, specular, intior,extior,alpha=0.1):
+    if(type(diffuse) == str):
+        diff = """<texture type="bitmap" name="diffuse_reflectance">
+                    <string name="filename" value="%s"/>
+                    <transform name="to_uv">
+                    <scale x="1" y="1"/>
+                </transform>
+        </texture>""" % diffuse
+    else:
+        diff = """<rgb name="diffuse_reflectance" value="%f,%f,%f"/>"""
+
+
     xmlstr = """<bsdf type="roughplastic">
         <string name="distribution" value="beckmann"/>
         <float name="int_ior" value="%f"/>
         <float name="ext_ior" value="%f"/>
-        <rgb name="diffuse_reflectance" value="%f,%f,%f"/>
+        <float name="alpha" value="%f"/>
+        %s
         <rgb name="specular_reflectance" value="%f,%f,%f"/>
-    </bsdf>""" % (intior,extior,diffuse[0],diffuse[1],diffuse[2],specular[0],specular[1],specular[2])
+    </bsdf>""" % (intior,extior,alpha,diff,specular[0],specular[1],specular[2])
     return xmlstr
 
 def conductor(specular, eta, k, alpha):

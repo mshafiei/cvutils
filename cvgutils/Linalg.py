@@ -121,6 +121,20 @@ def vectorNormalize(v):
 
 def relerr(a,b):
     return (((a-b) ** 2 / b **2) ** 0.5).sum()
+
+def normal2frame(n):
+    """[Creates a nxn local frame given a normal vector]
+
+    :param n: [nd Normal vector]
+    :type n: [Array]
+    :return: [Local frame]
+    :rtype: [nxn ndarray]
+    """
+    r = np.random.rand(len(n)); r / np.linalg.norm(r)
+    y = np.cross(n,r)
+    x = np.cross(r,y)
+    return np.stack((x,y,n),axis=0)
+    
 def lookAt(Origin, LookAt, Up):
 
     """[Creates camera matrix in right hand coordinate. Implementation of https://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/lookat-function]
