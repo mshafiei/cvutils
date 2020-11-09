@@ -1,6 +1,7 @@
 import h5py
 import numpy as np
 import cv2
+import pickle
 def images2hdf5(fn,imgs,masks):
 
     f = h5py.File(fn, "w")
@@ -14,3 +15,12 @@ def images2hdf5(fn,imgs,masks):
     for i, im in enumerate(masks):
         d2[i] = masks[i]
     f.close()
+
+def savePickle(fn,obj):
+    with open(fn,'wb') as fd:
+        pickle.dump(obj,fd)
+
+def loadPickle(fn):
+    with open(fn,'rb') as fd:
+        obj = pickle.load(fd)
+    return obj
