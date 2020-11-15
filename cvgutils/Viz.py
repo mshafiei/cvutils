@@ -30,13 +30,13 @@ def scatter(x):
 
 def plot(x,y,marker='.',xlabel='x',ylabel='y',title='',wandbStep=None):
     
-    fig = plt.figure()
-    plt.plot(x,y)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.ylabel(title)
+    fig, ax = plt.subplots()
+    ax.plot(x,y)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_title(title)
     im = get_img_from_fig(fig)
-    plt.close()
+    plt.close(fig)
     if(not(wandbStep is None)):
         wandb.log({title:[wandb.Image(im)]})
     return im
