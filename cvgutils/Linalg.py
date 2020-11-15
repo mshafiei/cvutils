@@ -238,3 +238,5 @@ def sampleRay(h,w,far,near,fov,samples,ext):
     d = torch.einsum('abc,ac...->ab...',ext[:,:3,:3,...].transpose(2,1),d[:,:3,...])
     
     return d
+
+    

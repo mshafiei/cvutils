@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import io
 import cv2
 import pickle
-
+import wandb
 # from https://stackoverflow.com/questions/7821518/matplotlib-save-plot-to-numpy-array
 def get_img_from_fig(fig, dpi=180):
     buf = io.BytesIO()
@@ -28,16 +28,18 @@ def scatter(x):
     plt.scatter(*x)
     return plt
 
-def plot(x):
-    """[2d or 3d plot]
-
-    :param x: [Points [x,y,z]]
-    :type x: [list]
-    :return: [matplotlib figure]
-    :rtype: [pyplot]
-    """
-    plt.plot(*x)
-    return plt
+def plot(x,y,marker='.',xlabel='x',ylabel='y',title='',wandbStep=None):
+    
+    fig = plt.figure()
+    plt.plot(x,y)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.ylabel(title)
+    im = get_img_from_fig(fig)
+    plt.close()
+    if(not(wandbStep is None)):
+        wandb.log({title:[wandb.Image(im)]})
+    return im
 
 def interpolationSeq(x,y,xs,ys):
     imgs = []
