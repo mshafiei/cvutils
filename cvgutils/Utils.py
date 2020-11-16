@@ -30,3 +30,8 @@ def loadPickle(fn):
     with open(fn,'rb') as fd:
         obj = pickle.load(fd)
     return obj
+
+def printLine(frame,opt):
+    if(opt.debugTiming):
+        frameinfo = getframeinfo(currentframe())
+        print('line: ',frameinfo.filename, frameinfo.lineno)
