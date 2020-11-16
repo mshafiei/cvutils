@@ -13,26 +13,30 @@ class logger:
         Dir.createIfNExist(path)
         self.path = path
         self.ltype = ltype
+        self.step = 0
         if(self.ltype == 'wandb'):
             wandb.init(project=projectName,name=expName)
         elif(self.ltype == 'tb'):
             self.writer = SummaryWriter(path)
 
-    def addImage(self,im,label,step):
+    def addImage(self,im,label):
         if(self.ltype == 'wandb'):
-            wandb.log({label:[wandb.Image(im)]},step=step)
+            wandb.log({label:[wandb.Image(im)]},step=self.step)
         elif(self.ltype == 'tb'):
             imshow = im
             if(type(im) == np.ndarray):
                 if(im.dtype == np.uint8):
                     imshow = torch.Tensor(im).permute(2,0,1) / 255
-            self.writer.add_image(label.replace(' ','_'), imshow, step)
+            self.writer.add_image(label.replace(' ','_'), imshow, self.step)
 
-    def addLoss(self,loss,label,step):
+    def addLoss(self,loss,label):
         if(self.ltype == 'wandb'):
-            wandb.log({label:loss},step)
+            wandb.log({label:loss},self.step)
         if(self.ltype == 'tb'):
-            self.writer.add_scalar(label, float(loss), step)
+            self.writer.add_scalar(label, float(loss), self.step)
+
+    def takeStep(self):
+        self.step += 1
 
 # from https://stackoverflow.com/questions/7821518/matplotlib-save-plot-to-numpy-array
 def get_img_from_fig(fig, dpi=180):
