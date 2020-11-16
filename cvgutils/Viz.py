@@ -5,6 +5,35 @@ import io
 import cv2
 import pickle
 import wandb
+import cvgutils.Dir as Dir
+from tensorboardX import SummaryWriter
+
+class logger:
+    def __init__(self,path,ltype,projectName,expName):
+        Dir.createIfNExist(path)
+        self.path = path
+        self.ltype = ltype
+        if(self.ltype == 'wandb'):
+            wandb.init(project=projectName,name=expName)
+        elif(self.ltype == 'tb'):
+            self.writer = SummaryWriter(path)
+
+    def addImage(self,im,label,step):
+        if(self.ltype == 'wandb'):
+            wandb.log({label:[wandb.Image(im)]},step=step)
+        elif(self.ltype == 'tb'):
+            imshow = im
+            if(type(im) == np.ndarray):
+                if(im.dtype == np.uint8):
+                    imshow = torch.Tensor(im).permute(2,0,1) / 255
+            self.writer.add_image(label.replace(' ','_'), imshow, step)
+
+    def addLoss(self,loss,label,step):
+        if(self.ltype == 'wandb'):
+            wandb.log({label:loss},step)
+        if(self.ltype == 'tb'):
+            self.writer.add_scalar(label, float(loss), step)
+
 # from https://stackoverflow.com/questions/7821518/matplotlib-save-plot-to-numpy-array
 def get_img_from_fig(fig, dpi=180):
     buf = io.BytesIO()
@@ -28,7 +57,7 @@ def scatter(x):
     plt.scatter(*x)
     return plt
 
-def plot(x,y,marker='.',xlabel='x',ylabel='y',title='',wandbStep=None):
+def plot(x,y,marker='.',xlabel='x',ylabel='y',title='',step=None,logger=None):
     
     fig, ax = plt.subplots()
     ax.plot(x,y)
@@ -37,8 +66,13 @@ def plot(x,y,marker='.',xlabel='x',ylabel='y',title='',wandbStep=None):
     ax.set_title(title)
     im = get_img_from_fig(fig)
     plt.close(fig)
-    if(not(wandbStep is None)):
-        wandb.log({title:[wandb.Image(im)]})
+
+    try:
+        if((not (logger is None)) and (not (step is None))):
+            logger.addImage(im,title,step)
+    except Exception as e:
+        print(e)
+    
     return im
 
 def interpolationSeq(x,y,xs,ys):
