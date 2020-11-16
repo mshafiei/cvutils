@@ -10,7 +10,8 @@ from tensorboardX import SummaryWriter
 
 class logger:
     def __init__(self,path,ltype,projectName,expName):
-        Dir.createIfNExist(path)
+        if(ltype == 'tb'):
+            Dir.createIfNExist(path)
         self.path = path
         self.ltype = ltype
         self.step = 0
@@ -61,10 +62,13 @@ def scatter(x):
     plt.scatter(*x)
     return plt
 
-def plot(x,y,marker='.',xlabel='x',ylabel='y',title='',step=None,logger=None):
+def plot(x,y,marker='.',xlabel='x',ylabel='y',title='',step=None,logger=None,ptype='plot'):
     
     fig, ax = plt.subplots()
-    ax.plot(x,y)
+    if(ptype=='plot'):
+        ax.plot(x,y)
+    elif(ptype=='scatter'):
+        ax.scatter(x,y)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_title(title)

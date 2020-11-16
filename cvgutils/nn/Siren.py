@@ -2,7 +2,8 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 import numpy as np
-
+import cvgutils.Utils as utils
+from inspect import currentframe
 class SineLayer(nn.Module):
     # See paper sec. 3.2, final paragraph, and supplement Sec. 1.5 for discussion of omega_0.
     
@@ -23,6 +24,7 @@ class SineLayer(nn.Module):
         self.linear = nn.Linear(in_features, out_features, bias=bias)
         
         self.init_weights()
+        
     
     def init_weights(self):
         with torch.no_grad():
@@ -38,15 +40,16 @@ class SineLayer(nn.Module):
     
     def forward_with_intermediate(self, input): 
         # For visualization of activation distributions
+        
         intermediate = self.omega_0 * self.linear(input)
         return torch.sin(intermediate), intermediate
     
 
 class Siren(nn.Module):
     def __init__(self, in_features, hidden_features, hidden_layers, out_features, outermost_linear=False, 
-                 first_omega_0=30, hidden_omega_0=30.):
+                 first_omega_0=30, hidden_omega_0=30.,debugTiming=False):
         super().__init__()
-        
+        self.debugTiming = debugTiming
         self.net = []
         self.net.append(SineLayer(in_features, hidden_features, 
                                   is_first=True, omega_0=first_omega_0))
@@ -70,8 +73,11 @@ class Siren(nn.Module):
         self.net = nn.Sequential(*self.net)
     
     def forward(self, coords):
+        utils.printLine(currentframe(),self.debugTiming)
         coords = coords.clone().detach().requires_grad_(True) # allows to take derivative w.r.t. input
+        utils.printLine(currentframe(),self.debugTiming)
         output = self.net(coords)
+        utils.printLine(currentframe(),self.debugTiming)
         return output, coords        
 
     def forward_with_activations(self, coords, retain_grad=False):
