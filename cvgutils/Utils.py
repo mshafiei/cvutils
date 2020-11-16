@@ -4,6 +4,7 @@ import cv2
 import pickle
 import cvgutils.Dir as Dir
 import os
+from inspect import currentframe, getframeinfo
 def images2hdf5(fn,imgs,masks):
 
     f = h5py.File(fn, "w")
