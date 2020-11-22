@@ -41,7 +41,7 @@ if __name__ == "__main__":
     a = -0.5
     b = 0.5
     visstep = 100
-    sigma = lambda x, a, b : (a <= x) & (x <= b)
+    sigma = lambda x, a, b : (a <= x) & (x <= b)*1000
     # sigma = lambda x, a, b : np.sin(np.pi * np.maximum(0,np.minimum(x-a,b-x)))
     def tau(x,a,b,sigma):
 
