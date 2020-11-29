@@ -19,7 +19,7 @@ class logger:
         if(self.ltype == 'wandb'):
             wandb.init(project=projectName,name=expName)
         elif(self.ltype == 'tb'):
-            self.writer = SummaryWriter(path)
+            self.writer = SummaryWriter(self.path)
 
     def addImage(self,im,label):
         if(self.ltype == 'wandb'):
