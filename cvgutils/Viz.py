@@ -7,12 +7,13 @@ import pickle
 import wandb
 import cvgutils.Dir as Dir
 from tensorboardX import SummaryWriter
+import os
 
 class logger:
     def __init__(self,path,ltype,projectName,expName):
+        self.path = os.path.join(path,expName)
         if(ltype == 'tb'):
-            Dir.createIfNExist(path)
-        self.path = path
+            Dir.createIfNExist(self.path)
         self.ltype = ltype
         self.step = 0
         if(self.ltype == 'wandb'):
