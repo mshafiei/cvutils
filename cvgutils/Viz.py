@@ -7,18 +7,19 @@ import pickle
 import wandb
 import cvgutils.Dir as Dir
 from tensorboardX import SummaryWriter
+import os
 
 class logger:
     def __init__(self,path,ltype,projectName,expName):
+        self.path = os.path.join(path,expName)
         if(ltype == 'tb'):
-            Dir.createIfNExist(path)
-        self.path = path
+            Dir.createIfNExist(self.path)
         self.ltype = ltype
         self.step = 0
         if(self.ltype == 'wandb'):
             wandb.init(project=projectName,name=expName)
         elif(self.ltype == 'tb'):
-            self.writer = SummaryWriter(path)
+            self.writer = SummaryWriter(self.path)
 
     def addImage(self,im,label):
         if(self.ltype == 'wandb'):
