@@ -65,7 +65,7 @@ def scatter(x):
 
 def plot(x,y,marker='.',xlabel='x',ylabel='y',title='',step=None,logger=None,ptype='plot'):
     
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=[3.2, 2.4],dpi=150)
     if(ptype=='plot'):
         ax.plot(x,y)
         ax.scatter(x,y,marker=marker)
@@ -86,7 +86,7 @@ def plot(x,y,marker='.',xlabel='x',ylabel='y',title='',step=None,logger=None,pty
     return im
 def plotOverlay(x,y1,y2,marker='.',xlabel='x',ylabel='y',legend=['Prediction','GT'],title='',step=None,logger=None,ptype='plot'):
     
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=[3.2, 2.4],dpi=150)
     if(ptype=='plot'):
         ax.plot(x,y1,'r')
         ax.plot(x,y2,'b')
