@@ -68,12 +68,37 @@ def plot(x,y,marker='.',xlabel='x',ylabel='y',title='',step=None,logger=None,pty
     fig, ax = plt.subplots()
     if(ptype=='plot'):
         ax.plot(x,y)
-        ax.scatter(x,y)
+        ax.scatter(x,y,marker=marker)
     elif(ptype=='scatter'):
         ax.scatter(x,y)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_title(title)
+    im = get_img_from_fig(fig)
+    plt.close(fig)
+
+    try:
+        if((not (logger is None)) and (not (step is None))):
+            logger.addImage(im,title,step)
+    except Exception as e:
+        print(e)
+    
+    return im
+def plotOverlay(x,y1,y2,marker='.',xlabel='x',ylabel='y',legend=['Prediction','GT'],title='',step=None,logger=None,ptype='plot'):
+    
+    fig, ax = plt.subplots()
+    if(ptype=='plot'):
+        ax.plot(x,y1,'r')
+        ax.plot(x,y2,'b')
+        ax.scatter(x,y1,marker=marker,color='r')
+        ax.scatter(x,y2,marker=marker,color='b')
+    elif(ptype=='scatter'):
+        ax.scatter(x,y1,marker=marker,color='r')
+        ax.scatter(x,y2,marker=marker,color='b')
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_title(title)
+    ax.legend(legend)
     im = get_img_from_fig(fig)
     plt.close(fig)
 
