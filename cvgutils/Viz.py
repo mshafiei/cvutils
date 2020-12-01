@@ -50,6 +50,7 @@ def get_img_from_fig(fig, dpi=180):
     img = cv2.imdecode(img_arr, 1)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
+
     return img
 
 def scatter(x):
@@ -65,7 +66,7 @@ def scatter(x):
 
 def plot(x,y,marker='.',xlabel='x',ylabel='y',title='',step=None,logger=None,ptype='plot'):
     
-    fig, ax = plt.subplots(figsize=[3.2, 2.4],dpi=150)
+    fig, ax = plt.subplots()
     if(ptype=='plot'):
         ax.plot(x,y)
         ax.scatter(x,y,marker=marker)
@@ -86,7 +87,7 @@ def plot(x,y,marker='.',xlabel='x',ylabel='y',title='',step=None,logger=None,pty
     return im
 def plotOverlay(x,y1,y2,marker='.',xlabel='x',ylabel='y',legend=['Prediction','GT'],title='',step=None,logger=None,ptype='plot'):
     
-    fig, ax = plt.subplots(figsize=[3.2, 2.4],dpi=150)
+    fig, ax = plt.subplots()
     if(ptype=='plot'):
         ax.plot(x,y1,'r')
         ax.plot(x,y2,'b')
