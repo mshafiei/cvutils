@@ -68,6 +68,7 @@ def plot(x,y,marker='.',xlabel='x',ylabel='y',title='',step=None,logger=None,pty
     fig, ax = plt.subplots()
     if(ptype=='plot'):
         ax.plot(x,y)
+        ax.scatter(x,y)
     elif(ptype=='scatter'):
         ax.scatter(x,y)
     ax.set_xlabel(xlabel)
