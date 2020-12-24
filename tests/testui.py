@@ -1,22 +1,16 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QSlider
 from PyQt5.QtGui import QIcon, QImage, QPixmap
-from PyQt5.QtCore import pyqtSlot, pyqtSignal
 import PyQt5.QtCore as QtCore
-import matplotlib.pyplot as plt
-import cvgutils.Viz as viz
 from cvgutils.ui import ImageWidget
 import numpy as np
-import h5py
-import os
-import torch
 import cv2
 
 class App(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.title = 'PyQt5 button - pythonspot.com'
+        self.title = 'Volume density viewer'
         self.left = 50
         self.top = 50
         self.width = 1500
@@ -37,9 +31,6 @@ class App(QWidget):
 
         self.show()
 
-    @pyqtSlot()
-    def on_click(self):
-        print('PyQt5 button click')
 
 
 if __name__ == '__main__':

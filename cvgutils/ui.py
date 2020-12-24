@@ -32,9 +32,10 @@ class ImageWidget(QWidget):
     def __init__(self,parent,image):
         super().__init__(parent)
         self.sl = QSlider(QtCore.Qt.Horizontal,self)
-        self.sl.setMaximum(3)
-        self.sl.setMinimum(1)
-        self.sl.setSingleStep(0.2)
+        self.sl.setMaximum(300)
+        self.sl.setMinimum(25)
+        self.sl.setValue(100)
+        self.sl.setSingleStep(25)
         self.sl.valueChanged.connect(self.zoom)
         self.sl.setGeometry(0,0,200,25)
         self.image = image
@@ -48,20 +49,20 @@ class ImageWidget(QWidget):
 
 
     def f1(self,x,y):
-        x = x / self.sl.value()
-        y = y / self.sl.value()
+        x = x / self.sl.value() / 100.0
+        y = y / self.sl.value() / 100.0
         txt = 'x, %04i y, %04i' % (x, y)
         self.infoLabel.setText(txt)
         
     def f2(self,x,y):
-        x = x / self.sl.value()
-        y = y / self.sl.value()
+        x = x / self.sl.value() / 100.0
+        y = y / self.sl.value() / 100.0
         txt = 'x, %04i y, %04i' % (x, y)
         self.infoLabel.setText(txt)
 
     def zoom(self):
         im = self.image.copy()
-        dsize = (int(im.shape[1]*self.sl.value()),int(im.shape[0]*self.sl.value()))
+        dsize = (int(im.shape[1]*self.sl.value() / 100.0),int(im.shape[0]*self.sl.value() / 100.0))
         im = cv2.resize(im,dsize)
         h = im.shape[0]
         w = im.shape[1]
