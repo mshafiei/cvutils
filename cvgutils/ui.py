@@ -1,13 +1,70 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QSlider
 from PyQt5.QtGui import QIcon, QImage, QPixmap
 from PyQt5.QtCore import pyqtSlot, pyqtSignal
+import PyQt5.QtCore as QtCore
+import cv2
+import numpy as np
 
 class ImageViewer(QLabel):
-    mouseMoved = pyqtSignal()
-    def __init__(self,parent):
+    mouseMoved = pyqtSignal(int,int)
+    mouseClicked = pyqtSignal(int,int)
+    def __init__(self,parent,image,moveFunc=None,releaseFunc=None):
         super().__init__(parent)
         self.setMouseTracking(True)
+        assert len(image.shape) == 3
+        h,w,_ = image.shape
+        qim = QImage(image, w, h, 3 * w, QImage.Format_RGB888)
+        self.setPixmap(QPixmap(qim))
+        if(moveFunc is not None):
+            self.mouseMoved.connect(moveFunc)
+            
+        if(moveFunc is not None):
+            self.mouseClicked.connect(releaseFunc)
 
     def mouseMoveEvent(self, e):
-        self.mouseMoved.emit()
-        QLabel.mousePressEvent(self, e)
+        self.mouseMoved.emit(e.x(),e.y())
+
+    def mouseReleaseEvent(self, e):
+        self.mouseClicked.emit(e.x(),e.y())
+
+class ImageWidget(QWidget):
+
+    def __init__(self,parent,image):
+        super().__init__(parent)
+        self.sl = QSlider(QtCore.Qt.Horizontal,self)
+        self.sl.setMaximum(3)
+        self.sl.setMinimum(1)
+        self.sl.setSingleStep(0.2)
+        self.sl.valueChanged.connect(self.zoom)
+        self.sl.setGeometry(0,0,200,25)
+        self.image = image
+        h,w,_ = image.shape
+        self.label = ImageViewer(self,image,self.f1,self.f2)
+        self.label.setGeometry(0,25,w,h)
+        self.infoLabel = QLabel(self)
+        self.infoLabel.setGeometry(200,0,200,20)
+        self.setGeometry(0,0,500,500)
+
+
+
+    def f1(self,x,y):
+        x = x / self.sl.value()
+        y = y / self.sl.value()
+        txt = 'x, %04i y, %04i' % (x, y)
+        self.infoLabel.setText(txt)
+        
+    def f2(self,x,y):
+        x = x / self.sl.value()
+        y = y / self.sl.value()
+        txt = 'x, %04i y, %04i' % (x, y)
+        self.infoLabel.setText(txt)
+
+    def zoom(self):
+        im = self.image.copy()
+        dsize = (int(im.shape[1]*self.sl.value()),int(im.shape[0]*self.sl.value()))
+        im = cv2.resize(im,dsize)
+        h = im.shape[0]
+        w = im.shape[1]
+        qim = QImage(im, w, h, 3 * w, QImage.Format_RGB888)
+        self.label.setPixmap(QPixmap(qim))
+        self.label.setGeometry(self.label.x(),self.label.y(),w,h)
