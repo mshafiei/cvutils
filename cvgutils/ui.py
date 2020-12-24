@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QSlider
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QSlider, QHBoxLayout, QRadioButton
 from PyQt5.QtGui import QIcon, QImage, QPixmap
 from PyQt5.QtCore import pyqtSlot, pyqtSignal
 import PyQt5.QtCore as QtCore
@@ -68,3 +68,58 @@ class ImageWidget(QWidget):
         qim = QImage(im, w, h, 3 * w, QImage.Format_RGB888)
         self.label.setPixmap(QPixmap(qim))
         self.label.setGeometry(self.label.x(),self.label.y(),w,h)
+
+class RadioButtons(QWidget):
+
+   def __init__(self, selectedFunc, names=['Button1', 'Button2'], parent=None):
+        super().__init__(parent)
+        """[Creates a layout containing a set of radio buttons]
+
+        :param selectedFunc: [Callback function ex: Func(self): self.sender().isChecked()]
+        :type selectedFunc: [function]
+        :param names: [Text of Buttons], defaults to ['Button1', 'Button2']
+        :type names: list, optional
+        :param parent: [parent widget], defaults to None
+        :type parent: [QWidget], optional
+        """
+            
+        layout = QHBoxLayout()
+        self.buttons = dict()
+        for name in names:
+            self.buttons[name] = QRadioButton(name)
+            self.buttons[name].toggled.connect(selectedFunc)
+            layout.addWidget(self.buttons[name])
+        self.buttons[name].setChecked(True)
+        self.setLayout(layout)
+
+# class RadioButtons(QWidget):
+
+#    def __init__(self, parent = None):
+#       super(RadioButtons, self).__init__(parent)
+		
+#       layout = QHBoxLayout()
+#       self.b1 = QRadioButton("Button1")
+#       self.b1.setChecked(True)
+#       self.b1.toggled.connect(lambda:self.btnstate(self.b1))
+#       layout.addWidget(self.b1)
+		
+#       self.b2 = QRadioButton("Button2")
+#       self.b2.toggled.connect(lambda:self.btnstate(self.b2))
+
+#       layout.addWidget(self.b2)
+#       self.setLayout(layout)
+#       self.setWindowTitle("RadioButton demo")
+		
+#    def btnstate(self,b):
+	
+#         if b.text() == "Button1":
+#             if b.isChecked() == True:
+#                 print(b.text()+" is selected")
+#             else:
+#                 print(b.text()+" is deselected")
+                
+#         if b.text() == "Button2":
+#             if b.isChecked() == True:
+#                 print(b.text()+" is selected")
+#             else:
+#                 print(b.text()+" is deselected")

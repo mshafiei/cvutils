@@ -5,7 +5,7 @@ from PyQt5.QtCore import pyqtSlot, pyqtSignal
 import PyQt5.QtCore as QtCore
 import matplotlib.pyplot as plt
 import cvgutils.Viz as viz
-from cvgutils.ui import ImageWidget
+from cvgutils.ui import ImageWidget, RadioButtons
 import numpy as np
 import h5py
 import os
@@ -33,9 +33,13 @@ class App(QWidget):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         a = (np.random.rand(100,100,3) * 255).astype(np.uint8)
-        self.label = ImageWidget(self,a)
-
+        # self.label = ImageWidget(self,a)
+        self.rdbtn = RadioButtons(self.select, names=['blah1','blah2'], parent=self)
         self.show()
+
+    def select(self):
+        if(self.sender().isChecked()):
+            print(self.sender().text())
 
     @pyqtSlot()
     def on_click(self):
