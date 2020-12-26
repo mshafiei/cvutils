@@ -12,14 +12,22 @@ class ImageViewer(QLabel):
         super().__init__(parent)
         self.setMouseTracking(True)
         assert len(image.shape) == 3
-        h,w,_ = image.shape
-        qim = QImage(image, w, h, 3 * w, QImage.Format_RGB888)
-        self.setPixmap(QPixmap(qim))
+        self.setImage(image)
         if(moveFunc is not None):
-            self.mouseMoved.connect(moveFunc)
+            assert type(moveFunc) == list
+            for i in moveFunc:
+                self.mouseMoved.connect(i)
             
-        if(moveFunc is not None):
-            self.mouseClicked.connect(releaseFunc)
+        if(releaseFunc is not None):
+            assert type(releaseFunc) == list
+            for i in releaseFunc:
+                self.mouseClicked.connect(i)
+                
+    def setImage(self, im):
+        h = im.shape[0]
+        w = im.shape[1]
+        qim = QImage(im, w, h, 3 * w, QImage.Format_RGB888)
+        self.setPixmap(QPixmap(qim))
 
     def mouseMoveEvent(self, e):
         self.mouseMoved.emit(e.x(),e.y())
@@ -29,7 +37,7 @@ class ImageViewer(QLabel):
 
 class ImageWidget(QWidget):
 
-    def __init__(self,parent,image):
+    def __init__(self,parent,image,moveFunc=None,releaseFunc = None):
         super().__init__(parent)
         layout = QGridLayout()
         self.sl = QSlider(QtCore.Qt.Horizontal,self)
@@ -38,32 +46,43 @@ class ImageWidget(QWidget):
         self.sl.setValue(100)
         self.sl.setSingleStep(25)
         self.sl.valueChanged.connect(self.zoom)
-        self.sl.setGeometry(0,0,200,25)
         self.image = image
         h,w,_ = image.shape
-        self.label = ImageViewer(self,image,self.f1,self.f2)
-        self.label.setGeometry(0,25,w,h)
-        self.infoLabel = QLabel(self)
-        self.infoLabel.setGeometry(200,0,200,20)
-        self.setGeometry(0,0,600,600)
+        if(moveFunc is not None):
+            moveFuncs = [self.f1, moveFunc]
+        else:
+            moveFuncs = [self.f1]
+        if(releaseFunc is not None):
+            releaseFuncs = [self.f2, releaseFunc]
+        else:
+            releaseFuncs = [self.f1]
+
+        self.label = ImageViewer(self,image,moveFuncs,releaseFuncs)
+        self.infoLabelHover = QLabel(self)
+        self.infoLabelHover.setText('Hover x, %04i y, %04i' % (0,0))
+        self.infoLabelCaptured = QLabel(self)
+        self.infoLabelCaptured.setText('Captured x, %04i y, %04i' % (0,0))
         layout.addWidget(self.sl,0,0)
-        layout.addWidget(self.infoLabel,0,1)
-        layout.addWidget(self.label,1,0,1,2)
+        layout.addWidget(self.infoLabelHover,0,1)
+        layout.addWidget(self.infoLabelCaptured,0,2)
+        layout.addWidget(self.label,1,0,1,3)
         self.setLayout(layout)
 
 
+    def setImage(self, im):
+        self.label.setImage(im)
 
     def f1(self,x,y):
-        x = x / self.sl.value() / 100.0
-        y = y / self.sl.value() / 100.0
-        txt = 'x, %04i y, %04i' % (x, y)
-        self.infoLabel.setText(txt)
+        x = x / (self.sl.value() / 100.0)
+        y = y / (self.sl.value() / 100.0)
+        txt = 'Hover x, %04i y, %04i' % (x, y)
+        self.infoLabelHover.setText(txt)
         
     def f2(self,x,y):
-        x = x / self.sl.value() / 100.0
-        y = y / self.sl.value() / 100.0
-        txt = 'x, %04i y, %04i' % (x, y)
-        self.infoLabel.setText(txt)
+        x = x / (self.sl.value() / 100.0)
+        y = y / (self.sl.value() / 100.0)
+        txt = 'Cpatured x, %04i y, %04i' % (x, y)
+        self.infoLabelCaptured.setText(txt)
 
     def zoom(self):
         im = self.image.copy()
@@ -71,9 +90,7 @@ class ImageWidget(QWidget):
         im = cv2.resize(im,dsize)
         h = im.shape[0]
         w = im.shape[1]
-        qim = QImage(im, w, h, 3 * w, QImage.Format_RGB888)
-        self.label.setPixmap(QPixmap(qim))
-        self.label.setGeometry(self.label.x(),self.label.y(),w,h)
+        self.setImage(im)
 
 class RadioButtons(QWidget):
 
