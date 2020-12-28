@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QSlider, QHBoxLayout, QRadioButton, QVBoxLayout, QGridLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QSlider, QHBoxLayout, QRadioButton, QVBoxLayout, QGridLayout, QFileDialog
 from PyQt5.QtGui import QIcon, QImage, QPixmap
 from PyQt5.QtCore import pyqtSlot, pyqtSignal
 import PyQt5.QtCore as QtCore
@@ -40,6 +40,8 @@ class ImageWidget(QWidget):
     def __init__(self,parent,image,moveFunc=None,releaseFunc = None):
         super().__init__(parent)
         layout = QGridLayout()
+        self.saveButton = QPushButton("Save")
+        self.saveButton.clicked.connect(self.saveImage)
         self.sl = QSlider(QtCore.Qt.Horizontal,self)
         self.sl.setMaximum(300)
         self.sl.setMinimum(25)
@@ -65,11 +67,16 @@ class ImageWidget(QWidget):
         layout.addWidget(self.sl,0,0)
         layout.addWidget(self.infoLabelHover,0,1)
         layout.addWidget(self.infoLabelCaptured,0,2)
-        layout.addWidget(self.label,1,0,1,3)
+        layout.addWidget(self.saveButton,0,3)
+        layout.addWidget(self.label,1,0,1,4)
         self.setLayout(layout)
 
+    def saveImage(self, im):
+        fn = QFileDialog.getSaveFileName(self, "Save image", './', ".png")
+        cv2.imwrite(fn[0] + fn[1],self.image[:,:,::-1])
 
     def setImage(self, im):
+        self.image = im
         self.label.setImage(im)
 
     def f1(self,x,y):

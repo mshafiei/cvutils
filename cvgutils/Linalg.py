@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-
+import mathutils
 def pt2xyz(p, t, r = 1):
     """[Polar to cartesian transform]
 
@@ -239,4 +239,22 @@ def sampleRay(h,w,far,near,fov,samples,ext):
     
     return d
 
+def u1tou2(u1,u2):
+    """[Compute shortest rotation between two vectors]
+
+    Args:
+        u1 ([ndarray]): [1st vector]
+        u2 ([ndarray]): [2nd vector]
+
+    Returns:
+        [Quaternion]: [Shortest rotation]
+    """
+    u1 = u1 / np.sum(u1 ** 2) ** 0.5
+    u2 = u2 / np.sum(u2 ** 2) ** 0.5
+    a = np.cross(u1,u2)
+    t = np.arccos(np.sum(u1 * u2))
+    q = mathutils.Quaternion(a,t)
+    print('u1 ', u1, ' u2 ',u2, ' a ', a , ' t ', t , ' q ', q)
+    exit(1)
+    return q
     
