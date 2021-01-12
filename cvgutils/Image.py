@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import torch
 import OpenEXR as exr
+import tqdm
 def writePng(fn, im):
     """[Tonemap a linear image with quasi srgb (clip and gamma 1/2.2) and write in filename with png extension]
 
@@ -56,20 +57,45 @@ def imageseq2avi(fn,ims,fps=30,Tonemap=True):
     """[summary]
 
     Args:
-        fn (str): [filename]
-        ims ([n x c x h x w ndarray]): [Array or tensor containing n image frames \in 0-1]
+        fn (str): [video filename .avi]
+        ims ([n x c x h x w ndarray or list of strs]): [Array or tensor or list of filenames containing n image frames \in 0-1]
         fps (int, optional): [Frames per second]. Defaults to 30.
     """
     if(type(ims) == torch.Tensor):
         ims = ims.cpu().numpy()
+        out = cv2.VideoWriter(fn,cv2.VideoWriter_fourcc(*'DIVX'), fps, (ims.shape[3],ims.shape[2]))
+    elif(type(ims) == list):
+        im = cv2.imread(ims[0],-1)
+        out = cv2.VideoWriter(fn,cv2.VideoWriter_fourcc(*'DIVX'), fps, (im.shape[1],im.shape[0]))
+    elif(type(ims) == np.ndarray):
+            out = cv2.VideoWriter(fn,cv2.VideoWriter_fourcc(*'DIVX'), fps, (ims.shape[3],ims.shape[2]))
+    else:
+        raise "didn't recognize input type"
 
-    out = cv2.VideoWriter(fn,cv2.VideoWriter_fourcc(*'DIVX'), fps, (ims.shape[3],ims.shape[2]))
-    for im in ims:
-        tmp = hdr2srgb(im)
-        tmp = tmp.transpose([1,2,0])[:,:,::-1]
+    for img in tqdm.tqdm(ims):
+        if(type(ims) == list):#it's a list of filenames
+            im = cv2.imread(img,-1)
+            tmp = hdr2srgb(im)
+            tmp = tmp
+        else:
+            im = img
+            tmp = hdr2srgb(im)
+            tmp = tmp.transpose([1,2,0])[:,:,::-1]
+
         out.write(tmp)
 
     out.release()
+
+
+def loadImageSeq(fns):
+    """
+    [In: list of image filenames, out:nxhxwx3 array of images]
+    """
+
+    im = []
+    for fn in fns:
+        im.append(cv2.imread(fn,-1))
+    return np.stack(im,axis=0)
 
 def readChannelExr(fn):
     """[Returns a dictionary mapping channel id to corresponding hxw image. Mostly copied from https://gist.github.com/jadarve/de3815874d062f72eaf230a7df41771b]

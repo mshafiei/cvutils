@@ -37,7 +37,7 @@ class ImageViewer(QLabel):
 
 class ImageWidget(QWidget):
 
-    def __init__(self,parent,image,moveFunc=None,releaseFunc = None):
+    def __init__(self,parent,image=None,moveFunc=None,releaseFunc = None):
         super().__init__(parent)
         layout = QGridLayout()
         self.saveButton = QPushButton("Save")
@@ -48,8 +48,6 @@ class ImageWidget(QWidget):
         self.sl.setValue(100)
         self.sl.setSingleStep(25)
         self.sl.valueChanged.connect(self.zoom)
-        self.image = image
-        h,w,_ = image.shape
         if(moveFunc is not None):
             moveFuncs = [self.f1, moveFunc]
         else:
@@ -59,6 +57,8 @@ class ImageWidget(QWidget):
         else:
             releaseFuncs = [self.f1]
 
+        self.image = image
+        h,w,_ = image.shape
         self.label = ImageViewer(self,image,moveFuncs,releaseFuncs)
         self.infoLabelHover = QLabel(self)
         self.infoLabelHover.setText('Hover x, %04i y, %04i' % (0,0))

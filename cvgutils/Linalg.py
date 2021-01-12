@@ -254,7 +254,5 @@ def u1tou2(u1,u2):
     a = np.cross(u1,u2)
     t = np.arccos(np.sum(u1 * u2))
     q = mathutils.Quaternion(a,t)
-    print('u1 ', u1, ' u2 ',u2, ' a ', a , ' t ', t , ' q ', q)
-    exit(1)
     return q
     
