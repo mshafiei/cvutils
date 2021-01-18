@@ -12,7 +12,7 @@ import os
 class logger:
     def __init__(self,path,ltype,projectName,expName):
         self.path = os.path.join(path,expName)
-        if(ltype == 'tb'):
+        if(ltype == 'tb' or ltype == 'filesystem'):
             Dir.createIfNExist(self.path)
         self.ltype = ltype
         self.step = 0
@@ -20,6 +20,9 @@ class logger:
             wandb.init(project=projectName,name=expName)
         elif(self.ltype == 'tb'):
             self.writer = SummaryWriter(self.path)
+        # elif(self.ltype == 'filesystem'):
+
+
 
     def addImage(self,im,label):
         if(self.ltype == 'wandb'):
@@ -30,12 +33,17 @@ class logger:
                 if(im.dtype == np.uint8):
                     imshow = torch.Tensor(im).permute(2,0,1) / 255
             self.writer.add_image(label.replace(' ','_'), imshow, self.step)
+        elif(self.ltype == 'filesystem'):
+            name = os.path.join(self.path,'%010i_%s.png' %(self.step, label.replace(' ','_')))
+            cv2.imwrite(name,im)
 
     def addLoss(self,loss,label):
         if(self.ltype == 'wandb'):
             wandb.log({label:loss},self.step)
-        if(self.ltype == 'tb'):
+        elif(self.ltype == 'tb'):
             self.writer.add_scalar(label, float(loss), self.step)
+
+
 
     def takeStep(self):
         self.step += 1

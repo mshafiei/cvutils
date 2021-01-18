@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QSlider,
 from PyQt5.QtGui import QIcon, QImage, QPixmap
 from PyQt5.QtCore import pyqtSlot, pyqtSignal
 import PyQt5.QtCore as QtCore
+from PyQt5.QtCore import Qt
 import cv2
 import numpy as np
 
@@ -121,3 +122,18 @@ class RadioButtons(QWidget):
             layout.addWidget(self.buttons[name])
         self.buttons[name].setChecked(True)
         self.setLayout(layout)
+
+class Slider(QWidget):
+    def __init__(self, valueChangeFunc, parent=None):
+        super().__init__(parent)
+        layout = QHBoxLayout()
+        self.slider = QSlider(Qt.Horizontal)
+        self.label = QLabel('')
+        layout.addWidget(self.slider)
+        layout.addWidget(self.label)
+        self.setLayout(layout)
+        self.slider.valueChanged.connect(valueChangeFunc)
+        self.slider.valueChanged.connect(self.valueChange)
+
+    def valueChange(self,b):
+        self.label.setText(str(b))
