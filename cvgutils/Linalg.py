@@ -308,3 +308,26 @@ def matrix_to_quaternion(matrix):
     o2 = _copysign(y, matrix[..., 0, 2] - matrix[..., 2, 0])
     o3 = _copysign(z, matrix[..., 1, 0] - matrix[..., 0, 1])
     return torch.stack((o0, o1, o2, o3), -1)
+
+#implemented from http://viclw17.github.io/2018/07/16/raytracing-ray-sphere-intersection/
+def raySphereIntersect(A,B,C,r):
+    """[Find two points per valid ray]
+
+    Args:
+        A ([Tensor or ndarray]): [ray origin]
+        B ([Tensor or ndarray]): [ray direction]
+        C ([Tensor or ndarray]): [center of sphere]
+        r ([Tensor or ndarray]): [radius of sphere]
+
+    Returns:
+        [tuple]: [t0,t1,valid]
+    """
+    a = (B ** 2).sum(-1,keepdim=True)
+    b = 2 * (B * (A - C)).sum(-1,keepdim=True)
+    c = ((A - C) ** 2).sum(-1,keepdim=True) - r ** 2
+    d = (b**2 - 4*a*c)
+    valid = d > 0
+    t0 = (-b - (d*valid) ** 0.5) / (2 * a)
+    t1 = (-b + (d*valid) ** 0.5) / (2 * a)
+
+    return t0,t1,valid

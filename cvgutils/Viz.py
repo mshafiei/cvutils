@@ -93,6 +93,37 @@ def plot(x,y,marker='.',xlabel='x',ylabel='y',title='',step=None,logger=None,pty
         print(e)
     
     return im
+
+def plot3(x,y,z,marker='.',xlabel='x',ylabel='y',zlabel='z',title='',step=None,logger=None):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    # u = np.linspace(0, np.pi, 30)
+    # v = np.linspace(0, 2 * np.pi, 30)
+
+    # x = np.concatenate((x,np.outer(np.sin(u), np.sin(v)).reshape(-1)),axis=-1)
+    # y = np.concatenate((y,np.outer(np.sin(u), np.cos(v)).reshape(-1)),axis=-1)
+    # z = np.concatenate((z,np.outer(np.cos(u), np.ones_like(v)).reshape(-1)),axis=-1)
+
+    ax.scatter(x,y,z,marker=marker)
+
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_zlabel(zlabel)
+    ax.set_title(title)
+    ax.autoscale_view()
+    plt.show()
+    im = get_img_from_fig(fig)
+    plt.close(fig)
+
+    try:
+        if(logger is not None):
+            logger.addImage(im,title)
+    except Exception as e:
+        print(e)
+    
+    return im
+
 def plotOverlay(x,y1,y2,marker='.',xlabel='x',ylabel='y',legend=['Prediction','GT'],title='',step=None,logger=None,ptype='plot'):
     
     fig, ax = plt.subplots()
