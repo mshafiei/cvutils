@@ -12,4 +12,7 @@ cmake -GNinja .. -DPYTHON_LIBRARY=/home/mohammad/bin/anaconda3/envs/python37/lib
 
 #next version features
 - enable import cvg as a package with cvg.lin, cvg.im, cvg.path, etc. as modules
-
+- create asset directory with
+  - Obj files
+  - HDR envmaps
+  -
