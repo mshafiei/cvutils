@@ -9,3 +9,7 @@ Install cuda toolkit by the following,
 this should install cuda toolkit 10.2 as pytorch depends on
 command used for compiling mitsuba2 by python37
 cmake -GNinja .. -DPYTHON_LIBRARY=/home/mohammad/bin/anaconda3/envs/python37/lib/libpython3.7m.so -DPYTHON_EXECUTABLE=/home/mohammad/bin/anaconda3/envs/python37/bin/python
+
+#next version features
+- enable import cvg as a package with cvg.lin, cvg.im, cvg.path, etc. as modules
+
