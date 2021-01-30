@@ -42,8 +42,8 @@ def xyz2pt(x, y, z):
 
     if(type(x) == torch.Tensor):
         acos = torch.acos
-        atan2 = np.atan2
-        atan = np.atan
+        atan2 = torch.atan2
+        atan = torch.atan
     else:
         acos = np.arccos
         atan2 = np.arctan2
@@ -331,3 +331,106 @@ def raySphereIntersect(A,B,C,r):
     t1 = (-b + (d*valid) ** 0.5) / (2 * a)
 
     return t0,t1,valid
+
+#according to https://agraphicsguy.wordpress.com/2015/11/01/sampling-microfacet-brdf/#:~:text=In%20order%20to%20sample%20the,several%20kinds%20of%20NDF%20around.
+def ggxpdf(theta, alpha):
+    if(type(alpha) == np.ndarray):
+        cos = np.cos
+        sin = np.sin
+    else:
+        cos = torch.cos
+        sin = torch.sin
+
+    return (2 * alpha**2 * cos(theta) * sin(theta)) / ((alpha ** 2 - 1) * cos(theta) ** 2 + 1) ** 2
+
+#according to https://agraphicsguy.wordpress.com/2015/11/01/sampling-microfacet-brdf/#:~:text=In%20order%20to%20sample%20the,several%20kinds%20of%20NDF%20around.
+def ggxSample(u,alpha):
+    """
+    [Samples NDF given random number u]
+    [u] random number
+    [alpha]
+
+    [Return] phi and theta
+    """
+    if(type(u) == np.ndarray):
+        atan = np.arctan
+        random = np.random.rand
+        stack = lambda x : np.stack(x,axis=-1)
+    else:
+        atan = torch.atan
+        random = torch.rand_like
+        stack = lambda x : torch.stack(x,dim=-1)
+    
+    p,t = random(u) * np.pi * 2, atan(alpha * (u / (1-u)) ** 0.5)
+    n = stack(pt2xyz(p,t))
+    return n, ggxpdf(t,alpha)
+
+# def BalanceHeuristic(pdfs):
+#     balanced = []
+#     denom = 
+def sampleEnvmap(xpdf,ypdf,u,v,envmap):
+    u = sampleInvCDF1D(xpdf,u).float() / envmap.shape[1]
+    v = sampleInvCDF1D(ypdf,v).float() / envmap.shape[0]
+    uv = torch.stack((u,v),dim=-1).unsqueeze(0) * 2 - 1
+    light_intensity = torch.nn.functional.grid_sample(envmap.unsqueeze(0).permute(0,3,1,2),uv).permute(0,2,3,1)
+    p, t = uv2pt(u,v)
+    x,y,z = pt2xyz(p,t)
+    light_dir = torch.stack((-x,y,z),dim=-1).unsqueeze(0)
+    return light_intensity, light_dir#, xpdf * ypdf
+
+    #   /* Based on "Building an Orthonormal Basis, Revisited" by
+    #    Tom Duff, James Burgess, Per Christensen,
+    #    Christophe Hery, Andrew Kensler, Max Liani,
+    #    and Ryusuke Villemin (JCGT Vol 6, No 1, 2017) */  
+    # implemented from
+    #https://github.com/mitsuba-renderer/mitsuba2/blob/93baa3c548c43d4a84a04f0349b649759a783a69/include/mitsuba/core/vector.h
+def shFrame(n):
+    if(type(n) == np.ndarray):
+        sign = np.sign
+        inv = np.linalg.inv
+        stack = lambda x: np.stack(x,axis=-1)
+    else:
+        sign = torch.sign
+        inv = torch.inverse
+        stack = lambda x: torch.stack(x,dim=-1)
+
+    sz = sign(n[...,2])
+    sz[sz == 0] = 1
+    a = -1 / (sz + n[...,2])
+    b = n[...,0] * n[...,1] * a
+
+    x = stack((sz * n[...,0] ** 2 * a + 1.0, sz * b, -sz * n[...,0]))
+    y = stack((b, sz + n[...,1] ** 2 * a, -n[...,1]))
+    sh = stack((x,y,n))
+    invsh = inv(sh)
+    return sh, invsh
+
+
+def sampleInvCDF1D(pdf,u,dim=0):
+    """[Sample on a 1d pdf by inverse CDF method]
+
+    Args:
+        pdf ([ndarray]): [pdf]
+        u ([ndarray]): [uniform samples]
+        dim ([ndarray]): [dimension on which cdf is defined]
+    """
+    if(type(pdf) == np.ndarray):
+        cumsum = np.cumsum
+        linspace = np.linspace
+        argmax = lambda x: np.argmax(x,axis=0)
+        toint = lambda x: x.astype(np.int)
+    else:
+        cumsum = lambda x: torch.cumsum(x,dim=0)
+        linspace = lambda x,y,z: torch.linspace(x,y,z,device=pdf.device)
+        argmax = lambda x: torch.Tensor(np.argmax(x.cpu().numpy(),axis=0)).to(device=x.device).long()
+        toint = lambda x: x.long()
+
+    res = pdf.shape[dim]
+    cdf = cumsum(pdf)
+    idx = linspace(0,1,res)
+    diff = (cdf[:,None] - idx[None,:]) >= 0
+    I = argmax(diff * 1)
+    I[-1] = res - 1
+    idx2 = u * (res-1)
+    return I[toint(idx2)]
+

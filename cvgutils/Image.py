@@ -71,7 +71,8 @@ def imageseq2avi(fn,ims,fps=30,Tonemap=True):
             out = cv2.VideoWriter(fn,cv2.VideoWriter_fourcc(*'DIVX'), fps, (ims.shape[3],ims.shape[2]))
     else:
         raise "didn't recognize input type"
-
+    
+    print('Writing video file')
     for img in tqdm.tqdm(ims):
         if(type(ims) == list):#it's a list of filenames
             im = cv2.imread(img,-1)
@@ -91,9 +92,9 @@ def loadImageSeq(fns):
     """
     [In: list of image filenames, out:nxhxwx3 array of images]
     """
-
+    print('Reading images')
     im = []
-    for fn in fns:
+    for fn in tqdm.tqdm(fns):
         im.append(cv2.imread(fn,-1))
     return np.stack(im,axis=0)
 

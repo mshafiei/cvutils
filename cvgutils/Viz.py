@@ -72,7 +72,7 @@ def scatter(x):
     plt.scatter(*x)
     return plt
 
-def plot(x,y,marker='.',xlabel='x',ylabel='y',title='',step=None,logger=None,ptype='plot'):
+def plot(x,y,marker='.',xlabel='x',ylabel='y',title='',step=None,logger=None,xlim=None,ylim=None,ptype='plot'):
     
     fig, ax = plt.subplots()
     if(ptype=='plot'):
@@ -80,6 +80,10 @@ def plot(x,y,marker='.',xlabel='x',ylabel='y',title='',step=None,logger=None,pty
         ax.scatter(x,y,marker=marker)
     elif(ptype=='scatter'):
         ax.scatter(x,y)
+    if(xlim is not None):
+        plt.xlim(xlim[0],xlim[1])
+    if(ylim is not None):
+        plt.ylim(ylim[0],ylim[1])
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_title(title)

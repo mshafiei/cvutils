@@ -15,4 +15,4 @@ cmake -GNinja .. -DPYTHON_LIBRARY=/home/mohammad/bin/anaconda3/envs/python37/lib
 - create asset directory with
   - Obj files
   - HDR envmaps
-  -
+- reorganize the package functions put functions in right files
