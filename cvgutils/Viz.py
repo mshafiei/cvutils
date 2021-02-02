@@ -128,7 +128,7 @@ def plot3(x,y,z,marker='.',xlabel='x',ylabel='y',zlabel='z',title='',step=None,l
     
     return im
 
-def plotOverlay(x,y1,y2,marker='.',xlabel='x',ylabel='y',legend=['Prediction','GT'],title='',step=None,logger=None,ptype='plot'):
+def plotOverlay(x,y1,y2,marker='.',xlabel='x',ylabel='y',legend=['Prediction','GT'],title='',xlim=None,ylim=None,step=None,logger=None,ptype='plot'):
     
     fig, ax = plt.subplots()
     if(ptype=='plot'):
@@ -153,6 +153,27 @@ def plotOverlay(x,y1,y2,marker='.',xlabel='x',ylabel='y',legend=['Prediction','G
         print(e)
     
     return im
+
+def plotconfig(xlabel='x',ylabel='count',legend=['Prediction','GT'],title='',ax=None,fig=None,xlim=None,ylim=None,step=None,logger=None):
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_title(title)
+    ax.legend(legend)
+    im = get_img_from_fig(fig)
+    plt.close(fig)
+    try:
+        if((not (logger is None)) and (not (step is None))):
+            logger.addImage(im,title,step)
+    except Exception as e:
+        print(e)
+
+    return im
+
+def histogram(x,bins,**kwargs):
+    fig, ax = plt.subplots()
+    ax.hist(x,bins)
+    return plotconfig(ax=ax,fig=fig,**kwargs)
+
 
 def interpolationSeq(x,y,xs,ys):
     imgs = []
