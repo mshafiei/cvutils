@@ -8,6 +8,7 @@ import wandb
 import cvgutils.Dir as Dir
 from tensorboardX import SummaryWriter
 import os
+import scipy
 
 class logger:
     def __init__(self,path,ltype,projectName,expName):
@@ -35,7 +36,7 @@ class logger:
             self.writer.add_image(label.replace(' ','_'), imshow, self.step)
         elif(self.ltype == 'filesystem'):
             name = os.path.join(self.path,'%010i_%s.png' %(self.step, label.replace(' ','_')))
-            cv2.imwrite(name,im)
+            cv2.imwrite(name,im[...,::-1])
 
     def addLoss(self,loss,label):
         if(self.ltype == 'wandb'):
@@ -128,6 +129,30 @@ def plot3(x,y,z,marker='.',xlabel='x',ylabel='y',zlabel='z',title='',step=None,l
     
     return im
 
+
+def errhist(x,err,nbins=256,minv=-1,maxv=1,legend='f(x)'):
+    """
+    [Shows the histogram of a function (error) on an axis x]
+    """
+
+    bin_means, bin_edges, binnumber = scipy.stats.binned_statistic(x,err,statistic='mean', bins=nbins,range=[minv, maxv])
+    bin_means[np.isnan(bin_means)] = -1
+    bin_width = (bin_edges[1] - bin_edges[0])
+    fig = plt.figure()
+    plt.hlines(bin_means, bin_edges[:-1], bin_edges[1:], colors='g', lw=2,
+            label=legend)
+    # plt.plot((binnumber - 0.5) * bin_width, x_pdf, 'g.', alpha=0.5)
+    plt.xlim(minv,maxv)
+    ymin = bin_means.min()
+    ymax = bin_means.max()
+    margin = (ymax - ymin) * 0.1
+    plt.ylim(ymin - margin, ymax + margin)
+    plt.legend(fontsize=10)
+    im = get_img_from_fig(fig)
+    plt.close()
+    return im
+
+
 def plotOverlay(x,y1,y2,marker='.',xlabel='x',ylabel='y',legend=['Prediction','GT'],title='',xlim=None,ylim=None,step=None,logger=None,ptype='plot'):
     
     fig, ax = plt.subplots()
@@ -154,11 +179,16 @@ def plotOverlay(x,y1,y2,marker='.',xlabel='x',ylabel='y',legend=['Prediction','G
     
     return im
 
-def plotconfig(xlabel='x',ylabel='count',legend=['Prediction','GT'],title='',ax=None,fig=None,xlim=None,ylim=None,step=None,logger=None):
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    ax.set_title(title)
-    ax.legend(legend)
+def plotconfig(x=None,y=None,xlabel='x',ylabel='count',legend=['Prediction','GT'],title='',ax=None,fig=None,xlim=None,ylim=None,step=None,logger=None):
+    # ax.set_xlabel(xlabel)
+    # ax.set_ylabel(ylabel)
+    # if(xlim =='margin' and x is not None):
+    #     r = (x.max() + x.min()) / 2
+    #     ax.set_xlim(x.min() - r * 0.3,x.max() + r * 0.3)
+    # if(ylim is not None):
+    #     ax.set_ylim(ylim[0],ylim[1])
+    # ax.set_title(title)
+    # ax.legend(legend)
     im = get_img_from_fig(fig)
     plt.close(fig)
     try:
@@ -172,7 +202,7 @@ def plotconfig(xlabel='x',ylabel='count',legend=['Prediction','GT'],title='',ax=
 def histogram(x,bins,**kwargs):
     fig, ax = plt.subplots()
     ax.hist(x,bins)
-    return plotconfig(ax=ax,fig=fig,**kwargs)
+    return plotconfig(x=x,ax=ax,fig=fig,**kwargs)
 
 
 def interpolationSeq(x,y,xs,ys):

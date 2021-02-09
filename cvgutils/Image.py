@@ -53,7 +53,7 @@ def resize(im,scale=None,dx=None,dy=None):
         Exception("At least one of the scale parameters should be set")
     return cv2.resize(im,dsize=dsize,interpolation = cv2.INTER_AREA)
 
-def imageseq2avi(fn,ims,fps=30,Tonemap=True):
+def imageseq2avi(fn,ims,enlarge=True,fps=30,Tonemap=True):
     """[summary]
 
     Args:
@@ -71,11 +71,12 @@ def imageseq2avi(fn,ims,fps=30,Tonemap=True):
             out = cv2.VideoWriter(fn,cv2.VideoWriter_fourcc(*'DIVX'), fps, (ims.shape[3],ims.shape[2]))
     else:
         raise "didn't recognize input type"
-    
     print('Writing video file')
     for img in tqdm.tqdm(ims):
         if(type(ims) == list):#it's a list of filenames
             im = cv2.imread(img,-1)
+            if(enlarge):
+                im = cv2.resize(im,(im.shape[1] * 2, im.shape[0] * 2))
             tmp = hdr2srgb(im)
             tmp = tmp
         else:

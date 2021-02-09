@@ -322,6 +322,19 @@ def raySphereIntersect(A,B,C,r):
     Returns:
         [tuple]: [t0,t1,valid]
     """
+    # A = torch.Tensor([-1,-1,-1]).to(device='cuda:0') * 3
+    # B = torch.Tensor([1,1,1]).to(device='cuda:0')
+    # # A = torch.nn.functional.normalize(A.unsqueeze(0))
+    # B = torch.nn.functional.normalize(B.unsqueeze(0))
+
+    # a = (B ** 2).sum(-1,keepdim=True)
+    # b = 2 * B.sum(-1,keepdim=True)
+    # c = (A ** 2).sum(-1,keepdim=True) - ((r - C) ** 2).sum(-1,keepdim=True)
+    # d = (b**2 - 4*a*c)
+    # valid = d > 0
+    # t0 = (-b - (d*valid) ** 0.5) / (2 * a)
+    # t1 = (-b + (d*valid) ** 0.5) / (2 * a)
+
     a = (B ** 2).sum(-1,keepdim=True)
     b = 2 * (B * (A - C)).sum(-1,keepdim=True)
     c = ((A - C) ** 2).sum(-1,keepdim=True) - r ** 2
