@@ -122,7 +122,7 @@ def vectorNormalize(v):
 def relerr(a,b):
     return (((a-b) ** 2 / b **2) ** 0.5).sum()
 
-def normal2frame(n):
+def normal2frame(n,dim):
     """[Creates a nxn local frame given a normal vector]
 
     :param n: [nd Normal vector]
@@ -130,10 +130,29 @@ def normal2frame(n):
     :return: [Local frame]
     :rtype: [nxn ndarray]
     """
-    r = np.random.rand(len(n)); r / np.linalg.norm(r)
-    y = np.cross(n,r)
-    x = np.cross(r,y)
-    return np.stack((x,y,n),axis=0)
+
+    if(type(n) == np.array):
+        rand = lambda x:np.random.rand(*x.shape)
+        norm = lambda x:np.linalg.norm(x,axis=-1)
+        cross = np.cross
+        stack = lambda x,axis:np.stack(x,axis=axis)
+        normalize = lambda x:np.linalg.normalize(x,axis=-1)
+    elif(type(n) == torch.Tensor):
+        rand = lambda x:torch.rand(*x.shape,device=n.device)
+        norm = lambda x:torch.norm(x,axis=-1)
+        cross = lambda a1,a2,a3,b1,b2,b3:torch.stack(((a2*b3-a3*b2), (a3*b1-a1*b3), (a1*b2 - a2*b1)),dim=-1)
+        stack = lambda x,axis:torch.stack(x,dim=axis)
+        normalize = lambda x,axis:torch.nn.functional.normalize(x,dim=axis)
+    else:
+        print('Unknown data type')
+        exit(0)
+
+    r = normalize(rand(n),axis=dim)
+    y = cross(n[...,0],n[...,1],n[...,2],r[...,0],r[...,1],r[...,2])
+    y = normalize(y,dim)
+    x = cross(y[...,0],y[...,1],y[...,2],n[...,0],n[...,1],n[...,2])
+    x = normalize(x,dim)
+    return stack((x,y,n),axis=dim)
     
 def lookAt(Origin, LookAt, Up):
 
