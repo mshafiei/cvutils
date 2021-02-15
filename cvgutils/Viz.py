@@ -149,7 +149,7 @@ def errhist(x,err,nbins=256,minv=-1,maxv=1,legend='f(x)'):
     plt.ylim(ymin - margin, ymax + margin)
     plt.legend(fontsize=10)
     im = get_img_from_fig(fig)
-    plt.close()
+    plt.close(fig)
     return im
 
 
@@ -212,7 +212,7 @@ def interpolationSeq(x,y,xs,ys):
         plt.scatter(xs,ys,color='b')
         plt.scatter(x0,y0,color='r')
         plotim = get_img_from_fig(fig)
-        plt.close()
+        plt.close(fig)
         imgs.append(plotim)
     return np.stack(imgs,axis=0)
     
