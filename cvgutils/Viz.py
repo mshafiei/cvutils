@@ -89,7 +89,7 @@ def plot(x,y,marker='.',xlabel='x',ylabel='y',title='',step=None,logger=None,xli
     ax.set_ylabel(ylabel)
     ax.set_title(title)
     im = get_img_from_fig(fig)
-    plt.close(fig)
+    plt.close('all')
 
     try:
         if((not (logger is None)) and (not (step is None))):
@@ -119,7 +119,7 @@ def plot3(x,y,z,marker='.',xlabel='x',ylabel='y',zlabel='z',title='',step=None,l
     ax.autoscale_view()
     plt.show()
     im = get_img_from_fig(fig)
-    plt.close(fig)
+    plt.close('all')
 
     try:
         if(logger is not None):
@@ -149,7 +149,7 @@ def errhist(x,err,nbins=256,minv=-1,maxv=1,legend='f(x)'):
     plt.ylim(ymin - margin, ymax + margin)
     plt.legend(fontsize=10)
     im = get_img_from_fig(fig)
-    plt.close(fig)
+    plt.close('all')
     return im
 
 
@@ -169,7 +169,7 @@ def plotOverlay(x,y1,y2,marker='.',xlabel='x',ylabel='y',legend=['Prediction','G
     ax.set_title(title)
     ax.legend(legend)
     im = get_img_from_fig(fig)
-    plt.close(fig)
+    plt.close('all')
 
     try:
         if((not (logger is None)) and (not (step is None))):
@@ -190,7 +190,7 @@ def plotconfig(x=None,y=None,xlabel='x',ylabel='count',legend=['Prediction','GT'
     # ax.set_title(title)
     # ax.legend(legend)
     im = get_img_from_fig(fig)
-    plt.close(fig)
+    plt.close('all')
     try:
         if((not (logger is None)) and (not (step is None))):
             logger.addImage(im,title,step)
@@ -212,7 +212,7 @@ def interpolationSeq(x,y,xs,ys):
         plt.scatter(xs,ys,color='b')
         plt.scatter(x0,y0,color='r')
         plotim = get_img_from_fig(fig)
-        plt.close(fig)
+        plt.close('all')
         imgs.append(plotim)
     return np.stack(imgs,axis=0)
     

@@ -28,6 +28,7 @@ imseq = []
 if(args.sorted == 1):
     for i in range(len(imfns)):
         imfns[i] = sorted(imfns[i])
+
 for i, fns in enumerate(imfns):
     if(i > 0):
         imseq.append((loadImageSeq(fns[args.start_id:args.end_id]) /255) ** (2.2))
@@ -36,6 +37,7 @@ for i, fns in enumerate(imfns):
     # print(imseq[i].min(), ' ', imseq[i].max())
 
 im = np.concatenate(imseq,axis=2)
+print('shape ', im.shape)
 imageseq2avi(args.output,im.transpose(0,3,1,2)[:,::-1,:,:],fps=15)
 
 # # ids = [0,50]

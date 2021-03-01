@@ -61,14 +61,18 @@ def imageseq2avi(fn,ims,enlarge=True,fps=30,Tonemap=True):
         ims ([n x c x h x w ndarray or list of strs]): [Array or tensor or list of filenames containing n image frames \in 0-1]
         fps (int, optional): [Frames per second]. Defaults to 30.
     """
+    if(enlarge):
+        scale = 3
+    else:
+        scale = 1
     if(type(ims) == torch.Tensor):
         ims = ims.cpu().numpy()
-        out = cv2.VideoWriter(fn,cv2.VideoWriter_fourcc(*'DIVX'), fps, (ims.shape[3],ims.shape[2]))
+        out = cv2.VideoWriter(fn,cv2.VideoWriter_fourcc(*'DIVX'), fps, (ims.shape[3]*scale,ims.shape[2]*scale))
     elif(type(ims) == list):
         im = cv2.imread(ims[0],-1)
-        out = cv2.VideoWriter(fn,cv2.VideoWriter_fourcc(*'DIVX'), fps, (im.shape[1],im.shape[0]))
+        out = cv2.VideoWriter(fn,cv2.VideoWriter_fourcc(*'DIVX'), fps, (im.shape[1]*scale,im.shape[0]*scale))
     elif(type(ims) == np.ndarray):
-            out = cv2.VideoWriter(fn,cv2.VideoWriter_fourcc(*'DIVX'), fps, (ims.shape[3],ims.shape[2]))
+            out = cv2.VideoWriter(fn,cv2.VideoWriter_fourcc(*'DIVX'), fps, (ims.shape[3]*scale,ims.shape[2]*scale))
     else:
         raise "didn't recognize input type"
     print('Writing video file')
@@ -76,13 +80,15 @@ def imageseq2avi(fn,ims,enlarge=True,fps=30,Tonemap=True):
         if(type(ims) == list):#it's a list of filenames
             im = cv2.imread(img,-1)
             if(enlarge):
-                im = cv2.resize(im,(im.shape[1] * 2, im.shape[0] * 2))
+                im = cv2.resize(im,(im.shape[1] * scale, im.shape[0] * scale))
             tmp = hdr2srgb(im)
             tmp = tmp
         else:
             im = img
             tmp = hdr2srgb(im)
             tmp = tmp.transpose([1,2,0])[:,:,::-1]
+            if(enlarge):
+                tmp = cv2.resize(tmp,(tmp.shape[1] * scale, tmp.shape[0] * scale))
 
         out.write(tmp)
 

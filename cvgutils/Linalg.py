@@ -100,6 +100,36 @@ def uv2ptUniform(u,v):
     p = u * 2 * np.pi
     return p,t
 
+def boxMuller(u1,u2):
+    """[Generate 2d normal distribution given uniform]
+
+    Args:
+        u1 ([type]): [description]
+        u2 ([type]): [description]
+    """
+    if(type(u1) == np.ndarray):
+        sin = np.sin
+        cos = np.cos
+        ln = np.log
+    elif(type(u1) == torch.Tensor):
+        sin = torch.sin
+        cos = torch.cos
+        ln = torch.log
+    
+    z0 = (-2 * ln(u1)) ** 0.5 * cos(2 * np.pi * u2)
+    z1 = (-2 * ln(u1)) ** 0.5 * sin(2 * np.pi * u2)
+    return z0, z1
+
+
+def normalPDF(mu,variance,x):
+    if(type(x) == np.ndarray):
+        exp = np.exp
+    elif(type(x) == torch.Tensor):
+        exp = torch.exp
+    coeff = 1 / ((variance * 2 * np.pi) ** 0.5)
+    e = exp(-0.5 * (x-mu) ** 2 / variance)
+    return coeff * e
+
 def naiveSampleOnSphere(u,v):
     p,t = uv2pt(u,v)
     return pt2xyz(p,t)
@@ -401,14 +431,18 @@ def ggxSample(u,alpha):
 #     balanced = []
 #     denom = 
 def sampleEnvmap(xpdf,ypdf,u,v,envmap):
-    u = sampleInvCDF1D(xpdf,u).float() / envmap.shape[1]
-    v = sampleInvCDF1D(ypdf,v).float() / envmap.shape[0]
+    u, xp = sampleInvCDF1D(xpdf,u)
+    v, yp = sampleInvCDF1D(ypdf,v)
+    u = u.float() / envmap.shape[1]
+    v = v.float() / envmap.shape[0]
     uv = torch.stack((u,v),dim=-1).unsqueeze(0) * 2 - 1
     light_intensity = torch.nn.functional.grid_sample(envmap.unsqueeze(0).permute(0,3,1,2),uv).permute(0,2,3,1)
     p, t = uv2pt(u,v)
     x,y,z = pt2xyz(p,t)
     light_dir = torch.stack((-x,y,z),dim=-1).unsqueeze(0)
-    return light_intensity, light_dir#, xpdf * ypdf
+    pdf = xp * yp
+    pdf /= pdf.sum(-1,keepdim=True)
+    return light_intensity, light_dir, pdf
 
     #   /* Based on "Building an Orthonormal Basis, Revisited" by
     #    Tom Duff, James Burgess, Per Christensen,
@@ -464,5 +498,5 @@ def sampleInvCDF1D(pdf,u,dim=0):
     I = argmax(diff * 1)
     I[-1] = res - 1
     idx2 = u * (res-1)
-    return I[toint(idx2)]
+    return I[toint(idx2)],pdf[toint(idx2)]
 
