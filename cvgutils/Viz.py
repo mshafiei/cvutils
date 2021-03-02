@@ -38,11 +38,21 @@ class logger:
             name = os.path.join(self.path,'%010i_%s.png' %(self.step, label.replace(' ','_')))
             cv2.imwrite(name,im[...,::-1])
 
-    def addLoss(self,loss,label):
+    def addScalar(self,scalar,label):
+        fn = os.path.join(self.path,label + '.txt')
         if(self.ltype == 'wandb'):
-            wandb.log({label:loss},self.step)
+            wandb.log({label:scalar},self.step)
         elif(self.ltype == 'tb'):
-            self.writer.add_scalar(label, float(loss), self.step)
+            self.writer.add_scalar(label, float(scalar), self.step)
+        elif(self.ltype == 'filesystem'):
+            with open(fn, 'a') as fd:
+                fd.write('%s : %f' % (label,scalar) )
+
+    def addString(self,text,label):
+        fn = os.path.join(self.path,label + '.txt')
+        if(self.ltype == 'filesystem'):
+            with open(fn, 'a') as fd:
+                fd.write(text + '\n')
 
 
 
