@@ -99,11 +99,17 @@ def loadImageSeq(fns):
     """
     [In: list of image filenames, out:nxhxwx3 array of images]
     """
+    assert len(fns) > 0
     print('Reading images')
-    im = []
+    ims = []
     for fn in tqdm.tqdm(fns):
-        im.append(cv2.imread(fn,-1))
-    return np.stack(im,axis=0)
+        im = cv2.imread(fn,-1)
+        if (im is not None):
+            ims.append(im)
+        else:
+            print('Cannot real ',fn)
+            exit(0)
+    return np.stack(ims,axis=0)
 
 def readChannelExr(fn):
     """[Returns a dictionary mapping channel id to corresponding hxw image. Mostly copied from https://gist.github.com/jadarve/de3815874d062f72eaf230a7df41771b]

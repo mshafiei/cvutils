@@ -163,8 +163,14 @@ def errhist(x,err,nbins=256,minv=-1,maxv=1,legend='f(x)'):
     return im
 
 
-def plotOverlay(x,y1,y2,marker='.',xlabel='x',ylabel='y',legend=['Prediction','GT'],title='',xlim=None,ylim=None,step=None,logger=None,ptype='plot'):
-    
+def plotOverlay(x,y1,y2,marker='.',xlabel='t',ylabel='transmittance',legend=['NT','NRF'],title='',xlim=None,ylim=None,step=None,logger=None,ptype='plot'):
+    import matplotlib
+    font = {'family' : 'normal',
+        'weight' : 'bold',
+        'size'   : 12}
+
+    matplotlib.rc('font', **font)
+
     fig, ax = plt.subplots()
     if(ptype=='plot'):
         ax.plot(x,y1,'r')
@@ -174,8 +180,8 @@ def plotOverlay(x,y1,y2,marker='.',xlabel='x',ylabel='y',legend=['Prediction','G
     elif(ptype=='scatter'):
         ax.scatter(x,y1,marker=marker,color='r')
         ax.scatter(x,y2,marker=marker,color='b')
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
+    ax.set_xlabel(xlabel,fontsize=12,fontweight='bold')
+    ax.set_ylabel(ylabel,fontsize=12,fontweight='bold')
     ax.set_title(title)
     ax.legend(legend)
     im = get_img_from_fig(fig)
