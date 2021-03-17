@@ -502,13 +502,13 @@ def sampleInvCDF1D(pdf,u,dim=0):
     return I[toint(idx2)],pdf[toint(idx2)]
 
 def errorValues(gt,pred):
-    gt_tensor = torch.Tensor(gt).clamp(0,1).permute(0,3,1,2).to('cuda:1')
-    pred_tensor = torch.Tensor(pred).clamp(0,1).permute(0,3,1,2).to('cuda:1')
+    gt_tensor = torch.Tensor(gt).clamp(0,1).permute(0,3,1,2).to('cuda:0')
+    pred_tensor = torch.Tensor(pred).clamp(0,1).permute(0,3,1,2).to('cuda:0')
     psnr_index = piq.psnr(pred_tensor, gt_tensor, data_range=1., reduction='none').item()
     ssim_index = piq.ssim(pred_tensor, gt_tensor, data_range=1., reduction='none').item()
     msssim_index = piq.multi_scale_ssim(pred_tensor, gt_tensor, data_range=1., reduction='none').item()
-    # lpips_index = piq.lpips(pred_tensor, gt_tensor, data_range=1., reduction='none').item()
-    rmse = ((gt - pred) ** 2).sum() ** 0.5
-    relmse = (((gt - pred) ** 2).sum() / (gt ** 2).sum()) ** 0.5
-    return {'rmse':rmse,'relmse':relmse,'psnr':psnr_index,'ssim':ssim_index,'msssim':msssim_index}
+    lpips_index = piq.LPIPS(reduction='none')(pred_tensor, gt_tensor).item()
+    rmse = ((gt - pred) ** 2).mean() ** 0.5
+    relmse = (((gt - pred) ** 2).mean() / (gt ** 2).mean() + 1e-5) ** 0.5
+    return {'rmse':rmse,'relmse':relmse,'psnr':psnr_index,'ssim':ssim_index,'msssim':msssim_index,'lpips':lpips_index}
     

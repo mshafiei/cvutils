@@ -73,12 +73,15 @@ class ImageWidget(QWidget):
         self.setLayout(layout)
 
     def saveImage(self, im):
-        fn = QFileDialog.getSaveFileName(self, "Save image", './', ".png")
-        cv2.imwrite(fn[0] + fn[1],self.image[:,:,::-1])
+
+        fn = QFileDialog.getSaveFileName(self, "Save image", './', ".exr")
+        cv2.imwrite(fn[0] + fn[1],self.hdr[:,:,::-1].astype(np.float32))
+        cv2.imwrite(fn[0] + fn[1].replace('exr','png'),self.image[:,:,::-1])
 
     def setImage(self, im):
-        self.image = im
-        self.label.setImage(im)
+        self.hdr = im
+        self.image = (im ** (1/2.2) * 255).astype(np.uint8)
+        self.label.setImage(self.image)
 
     def f1(self,x,y):
         x = x / (self.sl.value() / 100.0)
