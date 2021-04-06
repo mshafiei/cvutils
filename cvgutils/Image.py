@@ -167,6 +167,42 @@ def depth2txt(fn,d,im):
         out = d.reshape(-1,3)
     np.savetxt(fn,out,fmt='%-10.5f')
 
+def TileImages(images):
+    """[maps a 2d dictionary of images with integer key starting from zeros
+    to a tiled image of them (replace black image with empty cells)]
+
+    Args:
+        images ([dict]): [2d dictionary with integer keys]
+    """
+
+    vimages = []
+    resized_vimages = []
+    maxw = 0
+    for i,imi in enumerate(images):
+        imgs = []
+        for j,imj in enumerate(imi):
+            if(imj is not None):
+                shape = imj.shape
+        
+        for j,imj in enumerate(imi):
+            if(imj is None):
+                im = np.zeros(*shape)
+            else:
+                im = imj
+            imgs.append(im)
+        vim = np.concatenate(imgs,axis=1)
+        vimages.append(vim)
+        maxw = max(vim.shape[1],maxw)
+        
+    for vimg in vimages:
+        resized = cv2.resize(vimg,(maxw,int(vimg.shape[0]/vimg.shape[1] * maxw)))
+        resized_vimages.append(resized)
+
+    resized_vimage = np.concatenate(resized_vimages,axis=0)
+    return resized_vimage
+
+        
+
 
 
 

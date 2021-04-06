@@ -80,7 +80,8 @@ class ImageWidget(QWidget):
 
     def setImage(self, im):
         self.hdr = im
-        self.image = (im ** (1/2.2) * 255).astype(np.uint8)
+        self.image = (np.clip(im,0,1) ** (1/2.2) * 255).astype(np.uint8)
+        # self.image = (np.clip(im,0,1) ** 4.2 * 255).astype(np.uint8)
         self.label.setImage(self.image)
 
     def f1(self,x,y):

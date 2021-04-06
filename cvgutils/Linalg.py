@@ -507,8 +507,10 @@ def errorValues(gt,pred):
     psnr_index = piq.psnr(pred_tensor, gt_tensor, data_range=1., reduction='none').item()
     ssim_index = piq.ssim(pred_tensor, gt_tensor, data_range=1., reduction='none').item()
     msssim_index = piq.multi_scale_ssim(pred_tensor, gt_tensor, data_range=1., reduction='none').item()
-    lpips_index = piq.LPIPS(reduction='none')(pred_tensor, gt_tensor).item()
+    # with torch.no_grad():
+    #     lpips_index = piq.LPIPS(reduction='none')(pred_tensor, gt_tensor).item()
     rmse = ((gt - pred) ** 2).mean() ** 0.5
     relmse = (((gt - pred) ** 2).mean() / (gt ** 2).mean() + 1e-5) ** 0.5
-    return {'rmse':rmse,'relmse':relmse,'psnr':psnr_index,'ssim':ssim_index,'msssim':msssim_index,'lpips':lpips_index}
+    # return {'rmse':rmse,'relmse':relmse,'psnr':psnr_index,'ssim':ssim_index,'msssim':msssim_index,'lpips':lpips_index}
+    return {'rmse':rmse,'relmse':relmse,'psnr':psnr_index,'ssim':ssim_index,'msssim':msssim_index}
     

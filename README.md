@@ -17,3 +17,4 @@ cmake -GNinja .. -DPYTHON_LIBRARY=/home/mohammad/bin/anaconda3/envs/python37/lib
   - HDR envmaps
 - reorganize the package functions put functions in right files
 - reorganize viz package with plotconfig function
+- rely on conda install piq -c photosynthesis-team -c conda-forge -c PyTorch for image metrics

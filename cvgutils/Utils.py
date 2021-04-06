@@ -33,6 +33,9 @@ def loadPickle(fn):
     return obj
 
 def printLine(frame,debugTiming):
+    #use case:
+#     import inspect
+#     frame = inspect.currentframe()
     if(debugTiming):
         frameinfo = getframeinfo(frame)
         print('line: ',frameinfo.filename, frameinfo.lineno)
