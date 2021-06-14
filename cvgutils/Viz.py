@@ -9,6 +9,12 @@ import cvgutils.Dir as Dir
 from tensorboardX import SummaryWriter
 import os
 import scipy
+from matplotlib.ticker import ScalarFormatter
+
+#copied from https://stackoverflow.com/questions/42142144/displaying-first-decimal-digit-in-scientific-notation-in-matplotlib
+class ScalarFormatterForceFormat(ScalarFormatter):
+    def _set_format(self):  # Override function that finds format to use.
+        self.format = "%1.1f"  # Give format here
 
 class logger:
     def __init__(self,path,ltype,projectName,expName):

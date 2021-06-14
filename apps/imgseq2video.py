@@ -9,6 +9,7 @@ parser.add_argument('--imfns0',type=str, default='', help='First set filename')
 parser.add_argument('--imfns1',type=str, default='', help='Second set filename')
 parser.add_argument('--imfns2',type=str, default='', help='Third set filename')
 parser.add_argument('--imfns3',type=str, default='', help='Third set filename')
+parser.add_argument('--imfns4',type=str, default='', help='Third set filename')
 parser.add_argument('--sorted',type=int, default=0, help='Should we sort the files?')
 parser.add_argument('--start_id',type=int, default=0, help='Start ID')
 parser.add_argument('--end_id',type=int, default=-1, help='End ID')
@@ -27,6 +28,8 @@ if(args.imfns2 != ''):
     
 if(args.imfns3 != ''):
     imfns.append(glob.glob(args.imfns3))
+if(args.imfns4 != ''):
+    imfns.append(glob.glob(args.imfns4))
 
 imseq = []
 if(args.sorted == 1):
@@ -34,10 +37,11 @@ if(args.sorted == 1):
         imfns[i] = sorted(imfns[i])
 
 for i, fns in enumerate(imfns):
-    if(i == 0):
-        imseq.append((loadImageSeq(fns[args.start_id:args.end_id])))
-    else:
-        imseq.append(loadImageSeq(fns[args.start_id:args.end_id]) ** (2.2))
+    imseq.append((loadImageSeq(fns[args.start_id:args.end_id])))
+    # if(i == 0):
+    #     imseq.append((loadImageSeq(fns[args.start_id:args.end_id])))
+    # else:
+    #     imseq.append(loadImageSeq(fns[args.start_id:args.end_id]) ** (2.2))
     # print(imseq[i].min(), ' ', imseq[i].max())
 
 im = np.concatenate(imseq,axis=2)

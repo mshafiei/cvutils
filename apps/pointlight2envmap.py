@@ -8,6 +8,8 @@ import torch
 
 
 def pointlight2envmap(imseq,indexfn,envmap,scale,output,w,h):
+    #load images
+    #interpolate
     envmap = cv2.imread(envmap,-1)
     envmap = cv2.resize(envmap,(w,h))
     h = envmap.shape[0]
@@ -33,13 +35,14 @@ def pointlight2envmap(imseq,indexfn,envmap,scale,output,w,h):
     cv2.imwrite(output.replace('exr','png'),(np.clip(img,0,1)**(1/2.2)*255).astype(np.uint8))
     return img.astype(np.float32)
 
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('--imseq', type=str,default='/home/mohammad/Projects/NRV/dataset/buddha/testImgsExr-test-random/%07i.exr', help='List of images to combine')
-parser.add_argument('--indexfn', type=str,default='/home/mohammad/Projects/NRV/dataset/buddha/testData-test-random/index.pickle', help='index of images')
-parser.add_argument('--envmap', type=str,default='/home/mohammad/Projects/NRV/NrArtFree/cvgutils/tests/testimages/uffizi-large.exr', help='Filename of the environment map')
-parser.add_argument('--output', type=str,default='/home/mohammad/Projects/NRV/dataset/buddha/3x1-gt.exr', help='Filename of the environment map')
-opt = parser.parse_args()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--imseq', type=str,default='/home/mohammad/Projects/NRV/dataset/buddha/testImgsExr-test-random/%07i.exr', help='List of images to combine')
+    parser.add_argument('--indexfn', type=str,default='/home/mohammad/Projects/NRV/dataset/buddha/testData-test-random/index.pickle', help='index of images')
+    parser.add_argument('--envmap', type=str,default='/home/mohammad/Projects/NRV/NrArtFree/cvgutils/tests/testimages/uffizi-large.exr', help='Filename of the environment map')
+    parser.add_argument('--output', type=str,default='/home/mohammad/Projects/NRV/dataset/buddha/3x1-gt.exr', help='Filename of the environment map')
+    opt = parser.parse_args()
 
-pointlight2envmap(opt.imseq,opt.indexfn,opt.envmap,10,opt.output,3,1)
-# torch.save(opt,'opt.pickle')
-# opt = torch.load('opt.pickle')
+    pointlight2envmap(opt.imseq,opt.indexfn,opt.envmap,10,opt.output,3,1)
+    # torch.save(opt,'opt.pickle')
+    # opt = torch.load('opt.pickle')

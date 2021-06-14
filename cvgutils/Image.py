@@ -62,7 +62,7 @@ def imageseq2avi(fn,ims,enlarge=True,fps=30,Tonemap=True):
         fps (int, optional): [Frames per second]. Defaults to 30.
     """
     if(enlarge):
-        scale = 3
+        scale = 2
     else:
         scale = 1
     if(type(ims) == torch.Tensor):
@@ -94,7 +94,15 @@ def imageseq2avi(fn,ims,enlarge=True,fps=30,Tonemap=True):
 
     out.release()
 
+def antialiasResize(im,dwidth,dheight):
+    rh, rw = im.shape[0] / dheight * 2, im.shape[1] / dwidth * 2
+    if(int(rh) % 2 == 0):
+        rh = int(rh + 1)
+    if(int(rw) % 2 == 0):
+        rw = int(rw + 1)
 
+    im2 = cv2.GaussianBlur(im,(int(rw),int(rh)),0)
+    return cv2.resize(im2,(dwidth,dheight))
 def loadImageSeq(fns):
     """
     [In: list of image filenames, out:nxhxwx3 array of images]

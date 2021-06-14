@@ -5,6 +5,7 @@ import PyQt5.QtCore as QtCore
 from PyQt5.QtCore import Qt
 import cv2
 import numpy as np
+import torch
 
 class ImageViewer(QLabel):
     mouseMoved = pyqtSignal(int,int)
@@ -79,8 +80,11 @@ class ImageWidget(QWidget):
         cv2.imwrite(fn[0] + fn[1].replace('exr','png'),self.image[:,:,::-1])
 
     def setImage(self, im):
-        self.hdr = im
-        self.image = (np.clip(im,0,1) ** (1/2.2) * 255).astype(np.uint8)
+        if(type(im) == torch.Tensor):
+            self.hdr = im.cpu().numpy()
+        else:
+            self.hdr = im
+        self.image = (np.clip(self.hdr,0,1) ** (1/2.2) * 255).astype(np.uint8)
         # self.image = (np.clip(im,0,1) ** 4.2 * 255).astype(np.uint8)
         self.label.setImage(self.image)
 

@@ -2,6 +2,13 @@ import numpy as np
 import torch
 import mathutils
 import piq
+from scipy.spatial.transform import Rotation as R
+
+def rotate2D(deg):
+    rad = np.deg2rad(deg)
+    r = R.from_rotvec(rad * np.array([0, 0, 1]))
+    return r.as_matrix()
+
 def pt2xyz(p, t, r = 1):
     """[Polar to cartesian transform]
 
@@ -101,6 +108,24 @@ def uv2ptUniform(u,v):
     p = u * 2 * np.pi
     return p,t
 
+def intersect_ray_plane(o,w,p,n):
+    """[Compute the intersection point between a ray and a plane]
+
+    Args:
+        o ([ndarray]): [ray origin]
+        w ([ndarray]): [ray direction]
+        p ([ndarray]): [plane origin]
+        n ([ndarray]): [plane normal vector]
+    Returns:
+        [ndarray]: [intersection point, distance to ray origin]
+    """
+    #derived from <n,p - (o+wt)>=0
+    denom = (n * w).sum(-1,keepdim=True)
+    t = ((n * p).sum(-1,keepdim=True) - (n * o).sum(-1,keepdim=True)) / denom
+    t[denom == 0] = 1000
+    return o + w * t, t
+
+
 def boxMuller(u1,u2):
     """[Generate 2d normal distribution given uniform]
 
@@ -136,7 +161,11 @@ def naiveSampleOnSphere(u,v):
     return pt2xyz(p,t)
 
 def uniformSampleOnSphere(u,v):
-    p,t = uv2pt(u,v)
+    if(type(u) == np.array):
+        acos = np.acos
+    else:
+        acos = torch.arccos
+    p,t = (acos(2*v-1), 2 * np.pi * u)
     return pt2xyz(p,t)
 
 def vectorNormalize(v):
@@ -360,7 +389,7 @@ def matrix_to_quaternion(matrix):
     return torch.stack((o0, o1, o2, o3), -1)
 
 #implemented from http://viclw17.github.io/2018/07/16/raytracing-ray-sphere-intersection/
-def raySphereIntersect(A,B,C,r):
+def raySphereIntersect(A,B,C=0,r=1):
     """[Find two points per valid ray]
 
     Args:

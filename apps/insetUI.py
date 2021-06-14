@@ -99,43 +99,53 @@ class AppInset(QWidget):
     def imageMoved(self,x,y):
         pass
     def imageClicked(self,x,y):
-        self.x0 = x*2
-        self.y0 = y*2
+        self.x0.append(x*2)
+        self.y0.append(y*2)
 
     def store(self,a):
+        if(not os.path.exists(self.opt.outdir)):
+            os.makedirs(self.opt.outdir)
         def clipnstore(im,x0,x1,y0,y1,w,h,fn):
-            im1 = im[y0:y1,x0:x1,:]
+            im1 = im[y0:y1,x0:x1,:] 
             im1 = cv2.resize(im1,(w,h))
-            cv2.imwrite(fn,im1)
+            im1 = im1 ** (1/2.2) * 255
+            # cv2.imwrite(fn,im1.astype(np.uint8))
+            return im1
 
 
-        if(self.x0 >0):
+        for i in range(3,8):
             w = 200
             h = 160
-            for i in range(3,8):
+            ims = []
+            for xi, (x0,y0) in enumerate(zip(self.x0,self.y0)):
                 w2 = 10 * i
                 h2 = 8 * i
-                xlim = [self.x0-w2, self.x0+w2]
-                ylim = [self.y0-h2, self.y0+h2]
-                clipnstore(self.im0,xlim[0],xlim[1],ylim[0],ylim[1],w,h,os.path.join(self.opt.outdir,self.opt.methods[0]+'%03i_%03i.png' % (w2,h2)))
-                clipnstore(self.im1,xlim[0],xlim[1],ylim[0],ylim[1],w,h,os.path.join(self.opt.outdir,self.opt.methods[1]+'%03i_%03i.png' % (w2,h2)))
-                clipnstore(self.im2,xlim[0],xlim[1],ylim[0],ylim[1],w,h,os.path.join(self.opt.outdir,self.opt.methods[2]+'%03i_%03i.png' % (w2,h2)))
-                clipnstore(self.im3,xlim[0],xlim[1],ylim[0],ylim[1],w,h,os.path.join(self.opt.outdir,self.opt.methods[3]+'%03i_%03i.png' % (w2,h2)))
-                clipnstore(self.im4,xlim[0],xlim[1],ylim[0],ylim[1],w,h,os.path.join(self.opt.outdir,self.opt.methods[4]+'%03i_%03i.png' % (w2,h2)))
+                xlim = [x0-w2, x0+w2]
+                ylim = [y0-h2, y0+h2]
+                im1 = clipnstore(self.im0,xlim[0],xlim[1],ylim[0],ylim[1],w,h,os.path.join(self.opt.outdir,self.opt.methods[0]+'%03i_%03i.png' % (w2,h2)))
+                im2 = clipnstore(self.im1,xlim[0],xlim[1],ylim[0],ylim[1],w,h,os.path.join(self.opt.outdir,self.opt.methods[1]+'%03i_%03i.png' % (w2,h2)))
+                im3 = clipnstore(self.im2,xlim[0],xlim[1],ylim[0],ylim[1],w,h,os.path.join(self.opt.outdir,self.opt.methods[2]+'%03i_%03i.png' % (w2,h2)))
+                im4 = clipnstore(self.im3,xlim[0],xlim[1],ylim[0],ylim[1],w,h,os.path.join(self.opt.outdir,self.opt.methods[3]+'%03i_%03i.png' % (w2,h2)))
+                im5 = clipnstore(self.im4,xlim[0],xlim[1],ylim[0],ylim[1],w,h,os.path.join(self.opt.outdir,self.opt.methods[4]+'%03i_%03i.png' % (w2,h2)))
+                im = np.concatenate((im1,im2,im3,im4,im5),axis=1)
+                ims.append(im)
+            fn = os.path.join(self.opt.outdir,self.opt.methods[0].split('_')[0]+'_%03i_%03i.png' % (w2,h2))
+            im = np.concatenate(ims,axis=0)
+            cv2.imwrite(fn,im)
 
-            cv2.imwrite(os.path.join(self.opt.outdir,self.opt.methods[0]+'.png'),self.im0)
-            cv2.imwrite(os.path.join(self.opt.outdir,self.opt.methods[1]+'.png'),self.im1)
-            cv2.imwrite(os.path.join(self.opt.outdir,self.opt.methods[2]+'.png'),self.im2)
-            cv2.imwrite(os.path.join(self.opt.outdir,self.opt.methods[3]+'.png'),self.im3)
-            cv2.imwrite(os.path.join(self.opt.outdir,self.opt.methods[4]+'.png'),self.im4)
+            cv2.imwrite(os.path.join(self.opt.outdir,self.opt.methods[0]+'.png'),(self.im0 ** (1/2.2) * 255).astype(np.uint8))
+            cv2.imwrite(os.path.join(self.opt.outdir,self.opt.methods[1]+'.png'),(self.im1 ** (1/2.2) * 255).astype(np.uint8))
+            cv2.imwrite(os.path.join(self.opt.outdir,self.opt.methods[2]+'.png'),(self.im2 ** (1/2.2) * 255).astype(np.uint8))
+            cv2.imwrite(os.path.join(self.opt.outdir,self.opt.methods[3]+'.png'),(self.im3 ** (1/2.2) * 255).astype(np.uint8))
+            cv2.imwrite(os.path.join(self.opt.outdir,self.opt.methods[4]+'.png'),(self.im4 ** (1/2.2) * 255).astype(np.uint8))
 
     def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         layout = QGridLayout(self)
         
-        self.x0 = -1
-        self.y0 = -1
+        self.x0 = []
+        self.y0 = []
         
         im = np.zeros((10,10,3))
         self.label0 = ImageWidget(self,im,self.imageMoved,self.imageClicked)
@@ -152,46 +162,98 @@ class AppInset(QWidget):
         layout.addWidget(self.label3,1,3)
         layout.addWidget(self.label4,1,4)
         self.setLayout(layout)
+        self.frameChanged(0)
         self.show()
     
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Deploying command')
-    #buddha2
-    # parser.add_argument('--methods',type=str, default='buddha2_gt,buddha2_aug,buddha2_nrf,buddha2_pose', help='First set filename')
-    # parser.add_argument('--imfns0',type=str, default='/home/mohammad/Projects/NRV/dataset/buddha2/testImgsExr-pointlight/*.png', help='First set filename')
-    # parser.add_argument('--imfns1',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/buddha2/augmentation_method/render-video-latest-1/*.png', help='Second set filename')
-    # parser.add_argument('--imfns2',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/buddha2/NRF_method/render-video-latest-1/*.png', help='Third set filename')
-    # parser.add_argument('--imfns3',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/buddha2/pose_method/render-video-latest-1/*.png', help='Third set filename')
+    # #buddha2
+    # parser.add_argument('--methods',type=str, default='buddha2_gt,buddha2_nrf,buddha2_shadow,buddha2_aug,buddha2_no_aug', help='First set filename')
+    # parser.add_argument('--imfns0',type=str, default='/home/mohammad/Projects/NRV/dataset/buddha2/testImgsExr-pointlight/*.exr', help='First set filename')
+    # parser.add_argument('--imfns1',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/buddha2/NRF_method/render-video-latest-1/*.exr', help='Third set filename')
+    # parser.add_argument('--imfns2',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/buddha2/augmentation_shadow_method/render-video-latest-1/*.exr', help='Third set filename')
+    # parser.add_argument('--imfns3',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/buddha2/augmentation_method/render-video-latest-1/*.exr', help='Second set filename')
+    # parser.add_argument('--imfns4',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/buddha2/no_augmentation_method/render-video-latest-1/*.exr', help='Second set filename')
 
-    # #buddha
-    # parser.add_argument('--methods',type=str, default='buddha_gt,buddha_aug,buddha_no_aug,buddha_nrf,buddha_pose', help='First set filename')
-    # parser.add_argument('--imfns0',type=str, default='/home/mohammad/Projects/NRV/dataset/buddha/testImgsExr-pointlight/*.png', help='First set filename')
-    # parser.add_argument('--imfns1',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/buddha/augmentation_method/render-video-latest-1/fine_raycolor_pred_0*.png', help='Second set filename')
-    # parser.add_argument('--imfns2',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/buddha/no_augmentation_method/render-video-latest-1/fine_raycolor_pred_0*.png', help='Second set filename')
-    # parser.add_argument('--imfns3',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/buddha/NRF_method/render-video-latest-1/shadow_volume_*.png', help='Third set filename')
-    # parser.add_argument('--imfns4',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/buddha/pose_method/render-video-latest-1/fine_raycolor_pred_*.png', help='Third set filename')
+    # #globe
+    # parser.add_argument('--methods',type=str, default='globe_gt,globe_nrf,globe_shadow,globe_aug,globe_no_aug', help='First set filename')
+    # parser.add_argument('--imfns0',type=str, default='/home/mohammad/Projects/NRV/dataset/globe/testImgsExr-pointlight-video/*.exr', help='First set filename')
+    # parser.add_argument('--imfns1',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/globe/NRF_method/render-video-latest-1/*.exr', help='Third set filename')
+    # parser.add_argument('--imfns2',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/globe/augmentation_shadow_method/render-video-latest-1/*.exr', help='Third set filename')
+    # parser.add_argument('--imfns3',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/globe/augmentation_method/render-video-latest-1/*.exr', help='Second set filename')
+    # parser.add_argument('--imfns4',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/globe/no_augmentation_method/render-video-latest-1/*.exr', help='Second set filename')
 
-    # #girl
-    # parser.add_argument('--methods',type=str, default='girl_aug,girl_aug,girl_no_aug,girl_nrf,girl_pose', help='First set filename')
-    # parser.add_argument('--imfns0',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/girl/augmentation_method/render-video-latest-1/fine_raycolor_pred_0*.png', help='First set filename')
-    # parser.add_argument('--imfns1',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/girl/augmentation_method/render-video-latest-1/fine_raycolor_pred_0*.png', help='Second set filename')
-    # parser.add_argument('--imfns2',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/girl/no_augmentation_method/render-video-latest-1/fine_raycolor_pred_0*.png', help='Second set filename')
-    # parser.add_argument('--imfns3',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/girl/NRF_method/render-video-latest-1/shadow_volume_*.png', help='Third set filename')
-    # parser.add_argument('--imfns4',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/girl/pose_method/render-video-latest-1/fine_raycolor_pred_*.png', help='Third set filename')
+    # # #buddha
+    # parser.add_argument('--methods',type=str, default='buddha_gt,buddha_nrf,buddha_shadow,buddha_aug,buddha_no_aug', help='First set filename')
+    # parser.add_argument('--imfns0',type=str, default='/home/mohammad/Projects/NRV/dataset/buddha/testImgsExr-pointlight/*.exr', help='First set filename')
+    # parser.add_argument('--imfns1',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/buddha/NRF_method/render-video-latest-1/shadow_volume_*.exr', help='Third set filename')
+    # parser.add_argument('--imfns2',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/buddha/augmentation_shadow_method/render-video-latest-1/fine_raycolor_pred_*.exr', help='Third set filename')
+    # parser.add_argument('--imfns3',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/buddha/augmentation_method/render-video-latest-1/fine_raycolor_pred_0*.exr', help='Second set filename')
+    # parser.add_argument('--imfns4',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/buddha/no_augmentation_method/render-video-latest-1/fine_raycolor_pred_0*.exr', help='Second set filename')
 
-    #pony
-    parser.add_argument('--methods',type=str, default='pony_aug,pony_aug,pony_no_aug,pony_nrf,pony_pose', help='First set filename')
-    parser.add_argument('--imfns0',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/pony/augmentation_method/render-video-latest-1/fine_raycolor_pred_0*.png', help='First set filename')
-    parser.add_argument('--imfns1',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/pony/augmentation_method/render-video-latest-1/fine_raycolor_pred_0*.png', help='Second set filename')
-    parser.add_argument('--imfns2',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/pony/no_augmentation_method/render-video-latest-1/fine_raycolor_pred_0*.png', help='Second set filename')
-    parser.add_argument('--imfns3',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/pony/NRF_method/render-video-latest-1/shadow_volume_*.png', help='Third set filename')
-    parser.add_argument('--imfns4',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/pony/pose_method/render-video-latest-1/fine_raycolor_pred_*.png', help='Third set filename')
+    # # girl
+    # parser.add_argument('--methods',type=str, default='girl_nrf,girl_shadow,girl_aug,girl_no_aug,girl_pose', help='First set filename')
+    # parser.add_argument('--imfns0',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/girl/NRF_method/render-video-latest-1/shadow_volume_*.exr', help='Third set filename')
+    # parser.add_argument('--imfns1',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/girl/augmentation_shadow_method/render-video-latest-1/fine_raycolor_pred_0*.exr', help='First set filename')
+    # parser.add_argument('--imfns2',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/girl/augmentation_method/render-video-latest-1/fine_raycolor_pred_0*_linear.exr', help='Second set filename')
+    # parser.add_argument('--imfns3',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/girl/no_augmentation_method/render-video-latest-1/fine_raycolor_pred_0*.exr', help='Second set filename')
+    # parser.add_argument('--imfns4',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/girl/pose_method/render-video-latest-1/fine_raycolor_pred_*.exr', help='Third set filename')
+
+    # #pony
+    # parser.add_argument('--methods',type=str, default='pony_nrf,pony_shadow,pony_aug,pony_no_aug,pony_pose', help='First set filename')
+    # parser.add_argument('--imfns0',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/pony/NRF_method/render-video-latest-1/shadow_volume_*.exr', help='Third set filename')
+    # parser.add_argument('--imfns1',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/pony/augmentation_shadow_method/render-video-latest-1/fine_raycolor_pred_0*.exr', help='First set filename')
+    # parser.add_argument('--imfns2',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/pony/augmentation_method/render-video-latest-1/fine_raycolor_pred_0*_linear.exr', help='Second set filename')
+    # parser.add_argument('--imfns3',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/pony/no_augmentation_method/render-video-latest-1/fine_raycolor_pred_0*.exr', help='Second set filename')
+    # parser.add_argument('--imfns4',type=str, default='/home/mohammad/Projects/NRV/ICCVexpsCluster/pony/pose_method/render-video-latest-1/fine_raycolor_pred_*.exr', help='Third set filename')
+
+    #envmap
+    # #pony envmap
+    # parser.add_argument('--methods',type=str, default='pony_nrf,pony_shadow,pony_aug,pony_no_aug,pony_pose', help='First set filename')
+    # parser.add_argument('--imfns0',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/pony_NRF_pisa*.exr', help='Third set filename')
+    # parser.add_argument('--imfns1',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/pony_aug_shadow_pisa*.exr', help='First set filename')
+    # parser.add_argument('--imfns2',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/pony_aug_pisa*.exr', help='Second set filename')
+    # parser.add_argument('--imfns3',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/pony_no_aug_pisa*.exr', help='Second set filename')
+    # parser.add_argument('--imfns4',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/pony_pose_pisa*.exr', help='Third set filename')
+
+    # #girl envmap
+    # parser.add_argument('--methods',type=str, default='girl_nrf,girl_shadow,girl_aug,girl_no_aug,girl_pose', help='First set filename')
+    # parser.add_argument('--imfns0',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/girl_NRF_pisa*.exr', help='Third set filename')
+    # parser.add_argument('--imfns1',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/girl_aug_shadow_pisa*.exr', help='First set filename')
+    # parser.add_argument('--imfns2',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/girl_aug_pisa*.exr', help='Second set filename')
+    # parser.add_argument('--imfns3',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/girl_no_aug_pisa*.exr', help='Second set filename')
+    # parser.add_argument('--imfns4',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/girl_pose_pisa*.exr', help='Third set filename')
+
+    # #globe envmap
+    # parser.add_argument('--methods',type=str, default='globe_gt,globe_nrf,globe_shadow,globe_aug,globe_no_aug,girl_pose', help='First set filename')
+    # parser.add_argument('--imfns0',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/globe_gt_pisa*.exr', help='Third set filename')
+    # parser.add_argument('--imfns1',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/globe_NRF_pisa*.exr', help='Third set filename')
+    # parser.add_argument('--imfns2',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/globe_aug_shadow_pisa*.exr', help='First set filename')
+    # parser.add_argument('--imfns3',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/globe_aug_pisa*.exr', help='Second set filename')
+    # parser.add_argument('--imfns4',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/globe_no_aug_pisa*.exr', help='Second set filename')
+
+    # #buddha envmap
+    # parser.add_argument('--methods',type=str, default='buddha_gt,buddha_nrf,buddha_shadow,buddha_aug,buddha_no_aug,girl_pose', help='First set filename')
+    # parser.add_argument('--imfns0',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/buddha_gt_pisa*.exr', help='Third set filename')
+    # parser.add_argument('--imfns1',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/buddha_NRF_pisa*.exr', help='Third set filename')
+    # parser.add_argument('--imfns2',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/buddha_aug_shadow_pisa*.exr', help='First set filename')
+    # parser.add_argument('--imfns3',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/buddha_aug_pisa*.exr', help='Second set filename')
+    # parser.add_argument('--imfns4',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/buddha_no_aug_pisa*.exr', help='Second set filename')
+
+    #buddha2 envmap
+    parser.add_argument('--methods',type=str, default='buddha2_gt,buddha2_nrf,buddha2_shadow,buddha2_aug,buddha2_no_aug,girl_pose', help='First set filename')
+    parser.add_argument('--imfns0',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/buddha2_gt_pisa*.exr', help='Third set filename')
+    parser.add_argument('--imfns1',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/buddha2_NRF_pisa*.exr', help='Third set filename')
+    parser.add_argument('--imfns2',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/buddha2_aug_shadow_pisa*.exr', help='First set filename')
+    parser.add_argument('--imfns3',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/buddha2_aug_pisa*.exr', help='Second set filename')
+    parser.add_argument('--imfns4',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap/buddha2_no_aug_pisa*.exr', help='Second set filename')
+
 
     parser.add_argument('--start_id',type=int, default=0, help='Third set filename')
     parser.add_argument('--end_id',type=int, default=500, help='Third set filename')
 
-    parser.add_argument('--outdir',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Pointlight', help='Video filename filename')
+    parser.add_argument('--outdir',type=str, default='/home/mohammad/Projects/NRV/ICCVtex/Envmap_inset', help='Video filename filename')
     args = parser.parse_args()
 
     args.methods = args.methods.split(',')
