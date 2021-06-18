@@ -120,9 +120,7 @@ def intersect_ray_plane(o,w,p,n):
         [ndarray]: [intersection point, distance to ray origin]
     """
     #derived from <n,p - (o+wt)>=0
-    denom = (n * w).sum(-1,keepdim=True)
-    t = ((n * p).sum(-1,keepdim=True) - (n * o).sum(-1,keepdim=True)) / denom
-    t[denom == 0] = 1000
+    t = ((n * p).sum(-1,keepdim=True) - (n * o).sum(-1,keepdim=True)) / ((n * w).sum(-1,keepdim=True) +1e-8)
     return o + w * t, t
 
 
@@ -198,7 +196,7 @@ def normal2frame(n,dim):
         stack = lambda x,axis:np.stack(x,axis=axis)
         normalize = lambda x:np.linalg.normalize(x,axis=-1)
     elif(type(n) == torch.Tensor):
-        rand = lambda x:torch.rand(*x.shape,device=n.device)
+        rand = lambda x:torch.rand(*x.shape,dtype=x.dtype,device=n.device)
         norm = lambda x:torch.norm(x,axis=-1)
         cross = lambda a1,a2,a3,b1,b2,b3:torch.stack(((a2*b3-a3*b2), (a3*b1-a1*b3), (a1*b2 - a2*b1)),dim=-1)
         stack = lambda x,axis:torch.stack(x,dim=axis)

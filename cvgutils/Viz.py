@@ -9,6 +9,7 @@ import cvgutils.Dir as Dir
 from tensorboardX import SummaryWriter
 import os
 import scipy
+import time
 from matplotlib.ticker import ScalarFormatter
 
 #copied from https://stackoverflow.com/questions/42142144/displaying-first-decimal-digit-in-scientific-notation-in-matplotlib
@@ -27,8 +28,16 @@ class logger:
             wandb.init(project=projectName,name=expName)
         elif(self.ltype == 'tb'):
             self.writer = SummaryWriter(self.path)
+
+        self.profiler_time = {}
+        self.profiler_memory = {}
         # elif(self.ltype == 'filesystem'):
 
+    def tick(self,name):
+        self.profiler_time[name] = time.time()
+
+    def tock(self,name):
+        self.profiler_time[name] = time.time() - self.profiler_time[name]
 
 
     def addImage(self,im,label):

@@ -5,6 +5,9 @@ import pickle
 import cvgutils.Dir as Dir
 import os
 from inspect import currentframe, getframeinfo
+import sys
+import time
+
 def images2hdf5(fn,imgs,masks):
 
     f = h5py.File(fn, "w")
@@ -39,3 +42,16 @@ def printLine(frame,debugTiming):
     if(debugTiming):
         frameinfo = getframeinfo(frame)
         print('line: ',frameinfo.filename, frameinfo.lineno)
+
+def getsizeofLocal(l,exclude=[]):
+    """[Returns size of the local variable excluding certain names]
+
+    Args:
+        l ([type]): [description]
+        exclude ([type]): [description]
+    """
+    sz = 0
+    for lk,lv in zip(l.keys(),l.values()):
+        if(lk not in exclude):
+            sz += sys.getsizeof(l.values())
+    return sz
